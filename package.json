@@ -1,0 +1,49 @@
+{
+  "name": "svet",
+  "version": "1.0.0",
+  "description": "A small application to control PlayBulb devices",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier-standard 'src/**/*.js'",
+    "format:single": "prettier-standard",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "linters": {
+      "src/**/*.js": [
+        "prettier-standard",
+        "eslint",
+        "git add"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iakovmarkov/svet.git"
+  },
+  "keywords": [
+    "playbulb",
+    "bluetooth"
+  ],
+  "author": "Iakov Markov <iakovmarkov@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iakovmarkov/svet/issues"
+  },
+  "homepage": "https://github.com/iakovmarkov/svet#readme",
+  "dependencies": {
+    "noble": "^1.8.1"
+  },
+  "devDependencies": {
+    "debug": "^3.1.0",
+    "eslint": "^4.8.0",
+    "eslint-config-standard": "^10.2.1",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.2.3",
+    "nodemon": "^1.12.1",
+    "prettier": "^1.7.3",
+    "prettier-standard": "^7.0.1"
+  }
+}
