@@ -2,9 +2,10 @@
   "name": "svet",
   "version": "1.0.0",
   "description": "A small application to control PlayBulb devices",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "DEBUG='svet:*' nodemon src/index.js",
+    "start": "node src/index.js",
     "lint": "eslint src/**/*.js",
     "format": "prettier-standard 'src/**/*.js'",
     "format:single": "prettier-standard",
@@ -34,9 +35,13 @@
   },
   "homepage": "https://github.com/iakovmarkov/svet#readme",
   "dependencies": {
-    "noble": "^1.8.1"
+    "lodash": "^4.17.4",
+    "nconf": "^0.8.5",
+    "noble": "^1.8.1",
+    "telegraf": "^3.12.0"
   },
   "devDependencies": {
+    "chalk": "^2.1.0",
     "debug": "^3.1.0",
     "eslint": "^4.8.0",
     "eslint-config-standard": "^10.2.1",

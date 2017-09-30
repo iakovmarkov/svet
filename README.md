@@ -1,11 +1,31 @@
 # Svet
-Svet is a tiny app to manage Playbulb smart lightning devices.
+Svet is a tiny Telegram bot to manage Playbulb smart lightning devices.
 It uses Bluteooth LE to send commands to them, and can control multiple devices at the same time.
 
 ## Supported devices
 * MIPOW Playbulb Sphere
 * MIPOW Playbulb Comet
 * MIPOW Smart Bulb
+
+## Configuring
+* Set up a Telegram bot [here](https://core.telegram.org/bots#6-botfather). Remember the token, you'll need it later.
+* Ensure that your bluetooth is properly configured.
+* Copy `.env.example` file to `.env` and insert your bot token & telegram username.
+* Done :tada:
+
+## Running
+Run the following command:
+
+    npm start
+    
+This should start your bot that will listen to commands and do it's magic :sparkles:
+
+### Running without root permissions
+Run the following command:
+
+    sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
+
+This grants the node binary cap_net_raw privileges, so it can start/stop BLE advertising.
 
 ## Dependencies
 * `node` v8.0.0 or higher
