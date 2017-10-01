@@ -13,6 +13,7 @@ It uses Bluteooth LE to send commands to them, and can control multiple devices 
 * `/off` - Turns off all lights
 * `/set` - Sets the lights to specified color
 * `/devices` - Lists connected devices
+* `/reconnect` - Tries to reconnect to all devices
 * `/colors` - Lists known colors
 * `/restart` - Restarts the bot and reconnects to all lights
 

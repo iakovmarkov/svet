@@ -44,10 +44,7 @@ const write = (device, handle, data) =>
     if (!Buffer.isBuffer(data)) {
       data = Buffer.from(data)
     }
-    debug(
-      `Writing ${data.toString()} to ${handle} (${device.advertisement
-        .localName})`
-    )
+    debug(`Writing ${data} to ${handle} (${device.advertisement.localName})`)
     device.writeHandle(
       handle,
       data,
