@@ -6,10 +6,9 @@ const { initBluetooth, startScan, connect } = require('./bluetoothController')
 const { isPlaybulb, getConfig } = require('./playbulbConfig')
 const createBot = require('./telegraf')
 
-const devices = []
-
 const main = async () => {
   const bt = await initBluetooth()
+  const devices = []
 
   bt.on('discover', async device => {
     if (isPlaybulb(device)) {

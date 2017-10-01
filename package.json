@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "DEBUG='svet:*' nodemon src/index.js",
-    "start": "node src/index.js",
+    "start": "DEBUG='svet:*' node src/index.js",
     "lint": "eslint src/**/*.js",
     "format": "prettier-standard 'src/**/*.js'",
     "format:single": "prettier-standard",

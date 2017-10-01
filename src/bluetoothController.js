@@ -42,10 +42,12 @@ const read = (device, handle) =>
 const write = (device, handle, data) =>
   new Promise((resolve, reject) => {
     if (!Buffer.isBuffer(data)) {
-      debug('Write function got data that is not a buffer, transforming it...')
-      debug('Data:', data)
       data = Buffer.from(data)
     }
+    debug(
+      `Writing ${data.toString()} to ${handle} (${device.advertisement
+        .localName})`
+    )
     device.writeHandle(
       handle,
       data,
