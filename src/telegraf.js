@@ -9,7 +9,8 @@ const {
   size,
   join,
   slice,
-  omit
+  omit,
+  filter
 } = require('lodash/fp')
 const { write, connect } = require('./bluetoothController')
 const { getConfig } = require('./playbulbConfig')
@@ -27,7 +28,7 @@ const setAllColors = async (devices, newColor) => {
         `Device ${device.advertisement
           .localName} is not connected, trying to reconnect...`
       )
-      debug(omit('Noble', device))
+      debug(omit('_noble', device))
       await connect(device)
       debug(`Reconnected to ${device.advertisement.localName}.`)
     }
@@ -49,7 +50,8 @@ const authMiddleware = (ctx, next) => {
 }
 
 const devicesMiddleware = devices => (ctx, next) => {
-  if (size(devices)) {
+  const deviceList = filter(device => device.state === 'connected')(devices)
+  if (size(deviceList)) {
     next()
   } else {
     debug('Not connected to any device.')
@@ -71,12 +73,15 @@ const replyHelp = ctx => {
 
 const replyDevices = ctx => {
   const { devices } = ctx
-  const n = devices.length
   const deviceList = pipe(
+    filter(device => device.state === 'connected'),
     map(device => device.advertisement.localName),
     join(', ')
   )(devices)
-  ctx.reply(`I'm connected to those ${n} devices: ${deviceList}.`)
+  const n = pipe(filter(device => device.state === 'connected'), size)(devices)
+  ctx.reply(
+    `I'm connected to those ${n} device${n > 1 ? 's' : ''}: ${deviceList}.`
+  )
 }
 
 const replyColors = ctx => {
