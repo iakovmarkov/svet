@@ -1589,6 +1589,7 @@ const hexToRgb = hex => {
 }
 
 module.exports = {
+  colors,
   findColor,
   hexToRgb
 }

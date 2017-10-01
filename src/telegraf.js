@@ -45,12 +45,6 @@ const createBot = (bt, devices) => {
   bot.use(authMiddleware)
   bot.use(devicesMiddleware(devices))
 
-  bot.command('start', ctx => {
-    ctx.reply(
-      "Hi! Please, send me 4 digits from 0 to 255, and I'll change colors of all lights to this value."
-    )
-  })
-
   bot.command('off', ctx => {
     ctx.reply('Turning off all lights.')
 
@@ -73,11 +67,22 @@ const createBot = (bt, devices) => {
     }
   })
 
+  bot.command('help', ctx => {
+    ctx.reply(`
+/help - This help message
+/on - Turns on all lights
+/off - Turns off all lights
+/set - Sets the lights to specified color
+    `)
+  })
+
   bot.on('message', ctx => {
     const arr = pipe(get(['message', 'text']), split(' '), map(Number))(ctx)
 
     if (arr.length !== 4) {
-      ctx.reply('pls 4')
+      ctx.reply(
+        'I need you to specify 4 arguments - White, Red, Green & Blue components of color. Please, try again.'
+      )
       return
     }
 

@@ -5,12 +5,20 @@ const configs = [
   {
     name: 'PLAYBULB sphere',
     color: '0x0029'
+  },
+  {
+    name: 'MIPOW SMART BULB',
+    color: '0x001b'
+  },
+  {
+    name: 'PLAYBULB comet',
+    color: '0x0023'
   }
 ]
 
 const isPlaybulb = device => {
   const name = device.advertisement.localName
-  return pipe(map('name'), names => includes(names, name))(configs)
+  return pipe(map('name'), names => includes(name, names))(configs)
 }
 
 const getConfig = device => {
