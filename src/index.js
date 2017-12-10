@@ -5,6 +5,7 @@ const clearScreen = require('./clearScreen')
 const { initBluetooth, startScan, connect } = require('./bluetoothController')
 const { isPlaybulb, getConfig } = require('./playbulbConfig')
 const createBot = require('./telegraf')
+const keepalive = require('./keepalive')
 
 const main = async () => {
   const bt = await initBluetooth()
@@ -28,6 +29,7 @@ const main = async () => {
   await startScan(bt)
 
   createBot(bt, devices)
+  keepalive(bt, devices)
 }
 
 clearScreen()

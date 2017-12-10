@@ -1,5 +1,6 @@
 const debug = require('debug')('svet:telegraf')
 const Telegraf = require('telegraf')
+const _ = require('lodash/fp')
 const {
   get,
   includes,
@@ -9,11 +10,11 @@ const {
   size,
   join,
   slice,
-  omit,
-  filter
-} = require('lodash/fp')
+  filter,
+  identity
+} = _
 const { write, connect } = require('./bluetoothController')
-const { getConfig } = require('./playbulbConfig')
+const { getConfig, getName } = require('./playbulbConfig')
 const { findColor, colors } = require('./color')
 const nconf = require('./config')
 
@@ -21,20 +22,18 @@ const TOKEN = nconf.get('TOKEN')
 const ALLOWED_USERS = nconf.get('ALLOWED_USERS')
 const DEFAULT_COLOR = nconf.get('DEFAULT_COLOR')
 
-const getName = get(['advertisement', 'localName'])
-
 const setAllColors = async (devices, newColor) => {
   devices.forEach(async device => {
     if (device.state !== 'connected') {
       debug(
         `Device ${getName(device)} is not connected, trying to reconnect...`
       )
-      debug(omit('_noble', device))
       await connect(device)
       debug(`Reconnected to ${getName(device)}.`)
     }
-    const { color } = getConfig(device)
-    write(device, color, newColor)
+    const { color, transformColor = identity } = getConfig(device)
+    const deviceSpecificColor = transformColor(newColor)
+    write(device, color, deviceSpecificColor)
   })
 }
 
@@ -50,12 +49,13 @@ const authMiddleware = (ctx, next) => {
   }
 }
 
+const serviceCommands = ['/restart', '/reconnect', '/help']
 const devicesMiddleware = devices => (ctx, next) => {
   const isServiceMessage = pipe(
     get(['message', 'text']),
     split(' '),
     get(0),
-    command => includes(command, ['/restart', '/reconnect'])
+    includes(_, serviceCommands)
   )(ctx)
 
   if (isServiceMessage) {

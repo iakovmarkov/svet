@@ -1,5 +1,5 @@
 // const debug = require('debug')('svet:config')
-const { pipe, map, find, includes, matches } = require('lodash/fp')
+const { get, pipe, map, find, includes, matches } = require('lodash/fp')
 
 const configs = [
   {
@@ -26,7 +26,10 @@ const getConfig = device => {
   return find(matches({ name }))(configs)
 }
 
+const getName = get(['advertisement', 'localName'])
+
 module.exports = {
   isPlaybulb,
-  getConfig
+  getConfig,
+  getName
 }

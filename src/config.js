@@ -2,7 +2,8 @@ const nconf = require('nconf')
 const path = require('path')
 
 const DEFAULTS = {
-  DEFAULT_COLOR: [255, 0, 0, 0]
+  DEFAULT_COLOR: [255, 0, 0, 0],
+  KEEPALIVE_INTERVAL: 60 * 100 // 6 seconds
 }
 
 nconf
