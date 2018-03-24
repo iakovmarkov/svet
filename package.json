@@ -35,6 +35,7 @@
   },
   "homepage": "https://github.com/iakovmarkov/svet#readme",
   "dependencies": {
+    "bluetoothctl": "^1.1.0",
     "lodash": "^4.17.4",
     "nconf": "^0.8.5",
     "noble": "^1.8.1",

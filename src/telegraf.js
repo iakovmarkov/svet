@@ -1,5 +1,6 @@
 const debug = require('debug')('svet:telegraf')
 const Telegraf = require('telegraf')
+const bluetoothctl = require('bluetoothctl')
 const _ = require('lodash/fp')
 const {
   get,
@@ -21,6 +22,8 @@ const nconf = require('./config')
 const TOKEN = nconf.get('TOKEN')
 const ALLOWED_USERS = nconf.get('ALLOWED_USERS')
 const DEFAULT_COLOR = nconf.get('DEFAULT_COLOR')
+
+const sleep = (t) => new Promise(resolve => setTimeout(resolve, t))
 
 const setAllColors = async (devices, newColor) => {
   devices.forEach(async device => {
@@ -176,6 +179,9 @@ const replyReconnect = async ctx => {
     devices
   )
   ctx.reply(`Trying to reconnect to ${size(disconnectedDevices)} devices.`)
+  bluetoothctl.Bluetooth()
+  bluetoothctl.scan(true)
+  await sleep(1000)
   debug(
     `Trying to reconnect to ${size(
       disconnectedDevices
