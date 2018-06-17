@@ -2,43 +2,17 @@ const debug = require('debug')('svet:telegraf')
 const Telegraf = require('telegraf')
 const bluetoothctl = require('bluetoothctl')
 const _ = require('lodash/fp')
-const {
-  get,
-  includes,
-  pipe,
-  split,
-  map,
-  size,
-  join,
-  slice,
-  filter,
-  identity
-} = _
-const { write, connect } = require('./bluetoothController')
-const { getConfig, getName } = require('./playbulbConfig')
-const { findColor, colors } = require('./color')
+const { get, includes, pipe, split, map, size, join, slice, filter } = _
+const { setOn, setOff, setColor } = require('./playbulbController')
+const { connect } = require('./bluetoothController')
+const { getName } = require('./playbulbConfig')
+const { colors } = require('./color')
 const nconf = require('./config')
 
 const TOKEN = nconf.get('TOKEN')
 const ALLOWED_USERS = nconf.get('ALLOWED_USERS')
-const DEFAULT_COLOR = nconf.get('DEFAULT_COLOR')
 
-const sleep = (t) => new Promise(resolve => setTimeout(resolve, t))
-
-const setAllColors = async (devices, newColor) => {
-  devices.forEach(async device => {
-    if (device.state !== 'connected') {
-      debug(
-        `Device ${getName(device)} is not connected, trying to reconnect...`
-      )
-      await connect(device)
-      debug(`Reconnected to ${getName(device)}.`)
-    }
-    const { color, transformColor = identity } = getConfig(device)
-    const deviceSpecificColor = transformColor(newColor)
-    write(device, color, deviceSpecificColor)
-  })
-}
+const sleep = t => new Promise(resolve => setTimeout(resolve, t))
 
 const authMiddleware = (ctx, next) => {
   const username = get(['from', 'username'])(ctx)
@@ -53,7 +27,7 @@ const authMiddleware = (ctx, next) => {
 }
 
 const serviceCommands = ['/restart', '/reconnect', '/help']
-const devicesMiddleware = devices => (ctx, next) => {
+const devicesMiddleware = state => (ctx, next) => {
   const isServiceMessage = pipe(
     get(['message', 'text']),
     split(' '),
@@ -64,7 +38,9 @@ const devicesMiddleware = devices => (ctx, next) => {
   if (isServiceMessage) {
     next()
   } else {
-    const deviceList = filter(device => device.state === 'connected')(devices)
+    const deviceList = filter(device => device.state === 'connected')(
+      state.devices
+    )
     if (size(deviceList)) {
       next()
     } else {
@@ -88,7 +64,7 @@ const replyHelp = ctx => {
 }
 
 const replyDevices = ctx => {
-  const { devices } = ctx
+  const { state: { devices } } = ctx
   const deviceList = pipe(
     filter(device => device.state === 'connected'),
     map(device => getName(device))
@@ -121,48 +97,23 @@ const replyColors = ctx => {
 }
 
 const replyOff = ctx => {
-  const { devices } = ctx
-
   ctx.reply('Turning off all lights.')
-
-  setAllColors(devices, [0, 0, 0, 0])
+  setOff(ctx.state)
 }
 
 const replyOn = ctx => {
-  const { devices, currentColor } = ctx
   ctx.reply('Turning lights back on')
-
-  setAllColors(devices, currentColor)
+  setOn(ctx.state)
 }
 
 const replySet = ctx => {
-  const { devices } = ctx
   const color = ctx.message.text.replace('/set ', '')
-  const arr = findColor(color)
-  if (arr) {
-    setAllColors(devices, arr)
-    ctx.currentColor = arr
+  try {
+    setColor(ctx.state, color)
     ctx.reply(`Set the colors to ${color}`)
-  } else {
-    ctx.reply(`Sorry, I couldn't find any match for ${color} :(`)
+  } catch (e) {
+    ctx.reply(e)
   }
-}
-
-const replyGeneric = ctx => {
-  const { devices } = ctx
-  const arr = pipe(get(['message', 'text']), split(' '), map(Number))(ctx)
-
-  if (arr.length !== 4) {
-    ctx.reply(
-      'I need you to specify 4 arguments - White, Red, Green & Blue components of color. Please, try again.'
-    )
-    return
-  }
-
-  setAllColors(devices, arr)
-  ctx.currentColor = arr
-
-  ctx.reply(`Set the colors to ${join(', ', arr)}`)
 }
 
 const replyRestart = ctx => {
@@ -172,7 +123,7 @@ const replyRestart = ctx => {
 }
 
 const replyReconnect = async ctx => {
-  const { devices } = ctx
+  const { state: { devices } } = ctx
   const connectedDevices = []
   const disconnectedDevices = filter(
     device => device.state !== 'connected',
@@ -215,13 +166,12 @@ const replyReconnect = async ctx => {
   }
 }
 
-const createBot = (bt, devices) => {
+const createBot = state => {
   const bot = new Telegraf(TOKEN)
-  bot.context.devices = devices
-  bot.context.currentColor = DEFAULT_COLOR
+  bot.context.state = state
 
   bot.use(authMiddleware)
-  bot.use(devicesMiddleware(devices))
+  bot.use(devicesMiddleware(state))
 
   bot.command('help', replyHelp)
 
@@ -239,7 +189,7 @@ const createBot = (bt, devices) => {
 
   bot.command('reconnect', replyReconnect)
 
-  bot.on('message', replyGeneric)
+  // bot.on('message', replyGeneric)
 
   bot.startPolling()
 
