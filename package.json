@@ -7,14 +7,14 @@
     "dev": "DEBUG='svet:*' nodemon src/index.js --bot --web",
     "start": "DEBUG='svet:*' node src/index.js --bot --web",
     "lint": "eslint src/**/*.js",
-    "format": "prettier-standard 'src/**/*.js'",
-    "format:single": "prettier-standard",
+    "format": "prettier 'src/**/*.js' --write",
+    "format:single": "prettier",
     "precommit": "lint-staged"
   },
   "lint-staged": {
     "linters": {
       "src/**/*.js": [
-        "prettier-standard",
+        "prettier",
         "eslint",
         "git add"
       ]
@@ -50,14 +50,16 @@
     "telegraf": "^3.12.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "chalk": "^2.1.0",
     "debug": "^3.1.0",
-    "eslint": "^4.8.0",
-    "eslint-config-standard": "^10.2.1",
+    "eslint": "^4.19.1",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-react": "^7.11.1",
     "husky": "^0.14.3",
     "lint-staged": "^4.2.3",
     "nodemon": "^1.12.1",
-    "prettier": "^1.7.3",
-    "prettier-standard": "^7.0.1"
+    "prettier": "^1.15.3"
   }
 }

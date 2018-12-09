@@ -1,91 +1,91 @@
-const debug = require('debug')('svet:bluetooth')
-const noble = require('noble')
+const debug = require("debug")("svet:bluetooth");
+const noble = require("noble");
 
-noble.on('stateChange', () => debug('Bluetooth state changed to', noble.state))
-noble.on('scanStart', () => debug('Bluetooth started scan'))
-noble.on('warning', e => debug('Bluetooth warn:', e))
+noble.on("stateChange", () => debug("Bluetooth state changed to", noble.state));
+noble.on("scanStart", () => debug("Bluetooth started scan"));
+noble.on("warning", e => debug("Bluetooth warn:", e));
 
-noble.on('discover', peripheral => {
+noble.on("discover", peripheral => {
   const name =
-    typeof peripheral.advertisement.localName !== 'undefined'
+    typeof peripheral.advertisement.localName !== "undefined"
       ? `(${peripheral.advertisement.localName})`
-      : ''
-  debug(`Bluetooth discovered: ${peripheral.uuid} ${name}`)
-})
+      : "";
+  debug(`Bluetooth discovered: ${peripheral.uuid} ${name}`);
+});
 
 const powerNoble = () =>
   new Promise(resolve => {
-    if (noble.state === 'poweredOn') {
-      debug('noble powered on')
-      resolve()
-      return
+    if (noble.state === "poweredOn") {
+      debug("noble powered on");
+      resolve();
+      return;
     }
 
-    debug('Awaiting Bluetooth power state...')
-    noble.on('stateChange', () => {
-      if (noble.state === 'poweredOn') {
-        resolve()
+    debug("Awaiting Bluetooth power state...");
+    noble.on("stateChange", () => {
+      if (noble.state === "poweredOn") {
+        resolve();
       }
-    })
-  })
+    });
+  });
 
 const read = (device, handle) =>
   new Promise((resolve, reject) => {
     device.readHandle(handle, (error, data) => {
       if (error) {
-        reject(error)
+        reject(error);
       }
-      resolve(data)
-    })
-  })
+      resolve(data);
+    });
+  });
 
 const write = (device, handle, data) =>
   new Promise((resolve, reject) => {
     if (!Buffer.isBuffer(data)) {
-      data = Buffer.from(data)
+      data = Buffer.from(data);
     }
-    debug(`Writing ${data} to ${handle} (${device.advertisement.localName})`)
+    debug(`Writing ${data} to ${handle} (${device.advertisement.localName})`);
     device.writeHandle(
       handle,
       data,
       true /* write without waiting for response */,
       error => {
         if (error) {
-          reject(error)
+          reject(error);
         }
-        resolve()
+        resolve();
       }
-    )
-  })
+    );
+  });
 
 const connect = device =>
   new Promise((resolve, reject) => {
-    return {}
+    return {};
     device.connect(err => {
       if (err) {
-        reject(err)
+        reject(err);
       }
-      resolve(err)
-    })
-  })
+      resolve(err);
+    });
+  });
 
 const startScan = bt =>
   new Promise(resolve => {
-    debug('Awaiting Bluetooth scan start...')
-    bt.startScanning()
-    bt.on('scanStart', () => {
-      resolve()
-    })
-  })
+    debug("Awaiting Bluetooth scan start...");
+    bt.startScanning();
+    bt.on("scanStart", () => {
+      resolve();
+    });
+  });
 
 const initBluetooth = () =>
   new Promise(async resolve => {
-    debug('Initializing Bluetooth...')
-    if (noble.state !== 'poweredOn') {
-      await powerNoble()
+    debug("Initializing Bluetooth...");
+    if (noble.state !== "poweredOn") {
+      await powerNoble();
     }
-    resolve(noble)
-  })
+    resolve(noble);
+  });
 
 module.exports = {
   initBluetooth,
@@ -93,4 +93,4 @@ module.exports = {
   connect,
   read,
   write
-}
+};

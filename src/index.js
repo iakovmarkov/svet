@@ -1,5 +1,5 @@
-const clearScreen = require('./utils/clearScreen')
-const main = require('./backend')
+const clearScreen = require("./utils/clearScreen");
+const main = require("./backend");
 
-clearScreen()
-main()
+clearScreen();
+main();

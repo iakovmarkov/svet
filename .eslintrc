@@ -1,8 +1,27 @@
 {
-  "extends": ["standard"],
+  "extends": [
+    "prettier",
+    "prettier/react",
+    "plugin:react/recommended"
+  ],
+  "plugins": [
+    "babel",
+    "react"
+  ],
   "env": {
     "es6": true,
     "node": true,
     "browser": true
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "classes": true,
+      "jsx": true,
+      "experimentalObjectRestSpread": true,
+      "modules": true,
+      "destructuring": true,
+      "spread": true
+    }
   }
 }
