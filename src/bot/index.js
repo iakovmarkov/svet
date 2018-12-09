@@ -3,11 +3,11 @@ const Telegraf = require('telegraf')
 const bluetoothctl = require('bluetoothctl')
 const _ = require('lodash/fp')
 const { get, includes, pipe, split, map, size, join, slice, filter } = _
-const { setOn, setOff, setColor } = require('./playbulbController')
-const { connect } = require('./bluetoothController')
-const { getName } = require('./playbulbConfig')
-const { colors } = require('./color')
-const nconf = require('./config')
+const { setOn, setOff, setColor } = require('../backend/playbulbController')
+const { connect } = require('../backend/bluetoothController')
+const { getName } = require('../backend/playbulbConfig')
+const { colors } = require('../utils/color')
+const nconf = require('../utils/config')
 
 const TOKEN = nconf.get('TOKEN')
 const ALLOWED_USERS = nconf.get('ALLOWED_USERS')
@@ -64,12 +64,17 @@ const replyHelp = ctx => {
 }
 
 const replyDevices = ctx => {
-  const { state: { devices } } = ctx
+  const {
+    state: { devices }
+  } = ctx
   const deviceList = pipe(
     filter(device => device.state === 'connected'),
     map(device => getName(device))
   )(devices)
-  const n = pipe(filter(device => device.state === 'connected'), size)(devices)
+  const n = pipe(
+    filter(device => device.state === 'connected'),
+    size
+  )(devices)
   const s = n > 1 ? 's' : ''
   const otherDeviceCount = size(devices) - size(deviceList)
   const otherDevices = otherDeviceCount
@@ -91,7 +96,10 @@ const replyColors = ctx => {
   ctx.reply(`Here is the list of all colors I know (${n}):`)
 
   for (let i = 0; i < n; i += COLORS_PER_MSG) {
-    const chunk = pipe(slice(i, i + COLORS_PER_MSG), join(', '))(colorNames)
+    const chunk = pipe(
+      slice(i, i + COLORS_PER_MSG),
+      join(', ')
+    )(colorNames)
     ctx.reply(chunk)
   }
 }
@@ -123,7 +131,9 @@ const replyRestart = ctx => {
 }
 
 const replyReconnect = async ctx => {
-  const { state: { devices } } = ctx
+  const {
+    state: { devices }
+  } = ctx
   const connectedDevices = []
   const disconnectedDevices = filter(
     device => device.state !== 'connected',

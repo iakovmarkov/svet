@@ -18,7 +18,10 @@ const configs = [
 
 const isPlaybulb = device => {
   const name = device.advertisement.localName
-  return pipe(map('name'), names => includes(name, names))(configs)
+  return pipe(
+    map('name'),
+    names => includes(name, names)
+  )(configs)
 }
 
 const getConfig = device => {

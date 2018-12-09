@@ -10,7 +10,7 @@ const DEFAULTS = {
 nconf
   .argv()
   .env()
-  .file({ file: path.resolve(__dirname, '..', '.env') })
+  .file({ file: path.resolve(__dirname, '..', '..', '.env') })
   .defaults(DEFAULTS)
 
 module.exports = nconf

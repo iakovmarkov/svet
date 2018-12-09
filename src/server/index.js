@@ -1,11 +1,12 @@
+const debug = require('debug')('svet:server')
 const Koa = require('koa')
 const KoaRouter = require('koa-router')
 const KoaBody = require('koa-bodyparser')
 const auth = require('koa-basic-auth')
 const { graphqlKoa, graphiqlKoa } = require('apollo-server-koa')
-const nconf = require('./config')
+const nconf = require('../utils/config')
 const { makeExecutableSchema } = require('graphql-tools')
-const { setOn, setOff, setColor } = require('./playbulbController')
+const { setOn, setOff, setColor } = require('../backend/playbulbController')
 const _ = require('lodash/fp')
 const { get, map, matches } = _
 
@@ -49,7 +50,6 @@ const createServer = state => {
         return state
       },
       setColor: (__, { color }) => {
-        console.log(color)
         setColor(state, color)
         return state
       }
@@ -77,15 +77,15 @@ const createServer = state => {
 
   const schema = makeExecutableSchema({ typeDefs, resolvers })
 
-  router.post('/graphql', KoaBody(), graphqlKoa({ schema }))
-  router.get('/graphql', graphqlKoa({ schema }))
+  router.post('/', KoaBody(), graphqlKoa({ schema }))
+  router.get('/', graphqlKoa({ schema }))
 
-  router.get('/', graphiqlKoa({ endpointURL: '/graphql' }))
+  // router.get('/', graphiqlKoa({ endpointURL: '/graphql' }))
 
   app.use(router.routes())
   app.use(router.allowedMethods())
   app.listen(nconf.get('PORT'), () =>
-    console.log(`Server running on http://localhost:${nconf.get('PORT')}`)
+    debug(`Server running on http://localhost:${nconf.get('PORT')}`)
   )
 }
 

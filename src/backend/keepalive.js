@@ -1,5 +1,5 @@
 const debug = require('debug')('svet:keepalive')
-const nconf = require('./config')
+const nconf = require('../utils/config')
 
 const { connect } = require('./bluetoothController')
 const { getName } = require('./playbulbConfig')
@@ -24,7 +24,10 @@ const keepalive = async state => {
     debug(
       `Connected to ${size(connectedDevices)} devices`,
       size(connectedDevices)
-        ? ` (${pipe(map(getName), join(', '))(connectedDevices)}). `
+        ? ` (${pipe(
+          map(getName),
+          join(', ')
+        )(connectedDevices)}). `
         : '. ',
       otherDevicesCount ? `${otherDevicesCount} visible.` : ''
     )

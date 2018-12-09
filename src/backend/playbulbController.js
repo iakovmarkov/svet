@@ -3,7 +3,7 @@ const _ = require('lodash/fp')
 const { identity } = _
 const { write, connect } = require('./bluetoothController')
 const { getConfig, getName } = require('./playbulbConfig')
-const { findColor } = require('./color')
+const { findColor } = require('../utils/color')
 
 const setAllColors = async (devices, newColor) => {
   devices.forEach(async device => {

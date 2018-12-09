@@ -60,6 +60,7 @@ const write = (device, handle, data) =>
 
 const connect = device =>
   new Promise((resolve, reject) => {
+    return {}
     device.connect(err => {
       if (err) {
         reject(err)
