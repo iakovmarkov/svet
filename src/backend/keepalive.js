@@ -19,27 +19,32 @@ const keepalive = async state => {
       device => device.state === "connected",
       state.devices
     );
-    const otherDevicesCount = size(state.devices) - size(connectedDevices);
 
-    debug(
-      `Connected to ${size(connectedDevices)} devices`,
-      size(connectedDevices)
-        ? ` (${pipe(
-            map(getName),
-            join(", ")
-          )(connectedDevices)}). `
-        : ". ",
-      otherDevicesCount ? `${otherDevicesCount} visible.` : ""
+    const otherDevices = filter(
+      device => device.state !== "connected",
+      state.devices
     );
 
-    state.devices.forEach(async device => {
-      if (device.state !== "connected") {
-        debug(
-          `Device ${getName(device)} is not connected, trying to reconnect...`
-        );
-        await connect(device);
-        debug(`Reconnected to ${getName(device)}.`);
+    if (size(connectedDevices)) {
+      debug(`Connected to ${size(connectedDevices)} devices:`)
+      for (const device of connectedDevices) {
+        debug(getName(device))
       }
+    }
+
+    if (size(otherDevices)) {
+      debug(`Other ${size(otherDevices)} devices visible:`)
+      for (const device of otherDevices) {
+        debug(getName(device))
+      }
+    }
+
+    otherDevices.forEach(async device => {
+      debug(
+        `Device ${getName(device)} is not connected, trying to reconnect...`
+      );
+      await connect(device);
+      debug(`Connected to ${getName(device)} (${state.devices.length} devices total)`);
     });
 
     debug(`Next scan in ${ms(KEEPALIVE_INTERVAL)}`);

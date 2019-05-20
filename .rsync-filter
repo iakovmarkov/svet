@@ -1,0 +1,7 @@
+exclude node_modules
+exclude .rsync-filter
+exclude .expo
+exclude .idea
+exclude .ci
+exclude .git
+exclude .env

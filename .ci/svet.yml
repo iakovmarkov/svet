@@ -1,0 +1,32 @@
+---
+- hosts: pi
+  remote_user: pi
+  tasks:
+  - name: stop svet
+    become: yes
+    service:
+      name: svet
+      state: stopped
+  - name: copy app
+    synchronize:
+      src: '../../'
+      dest: /home/pi/svet
+#  - name: get latet Svet
+#    git:
+#      repo: 'git@github.com:iakovmarkov/svet.git'
+#      dest: /home/pi/svet
+#      accept_hostkey: yes
+  - name: install packages
+    npm:
+      path: /home/pi/svet
+  - name: start svet
+    become: yes
+    service:
+      name: svet
+      state: started
+  - name: ensure svet is running
+    become: yes
+    service:
+      name: svet
+      state: started
+  handlers:

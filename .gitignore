@@ -1,4 +1,12 @@
 .idea
 node_modules
+node_modules/**/*
+.expo/*
+npm-debug.*
+*.jks
+*.p12
+*.key
+*.mobileprovision
 svet-
 .env
+.ci/*.retry

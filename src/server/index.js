@@ -78,9 +78,8 @@ const createServer = state => {
   const schema = makeExecutableSchema({ typeDefs, resolvers });
 
   router.post("/", KoaBody(), graphqlKoa({ schema }));
-  router.get("/", graphqlKoa({ schema }));
-
-  // router.get('/', graphiqlKoa({ endpointURL: '/graphql' }))
+  // router.get("/", graphqlKoa({ schema }));
+  router.get('/', graphiqlKoa({ endpointURL: '/' }))
 
   app.use(router.routes());
   app.use(router.allowedMethods());

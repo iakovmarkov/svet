@@ -60,8 +60,7 @@ const write = (device, handle, data) =>
 
 const connect = device =>
   new Promise((resolve, reject) => {
-    return {};
-    device.connect(err => {
+    return device.connect(err => {
       if (err) {
         reject(err);
       }
@@ -80,10 +79,11 @@ const startScan = bt =>
 
 const initBluetooth = () =>
   new Promise(async resolve => {
-    debug("Initializing Bluetooth...");
     if (noble.state !== "poweredOn") {
+      debug("Initializing Bluetooth...");
       await powerNoble();
     }
+    debug("Bluetooth on, scanning...");
     resolve(noble);
   });
 

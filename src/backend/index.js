@@ -17,7 +17,7 @@ function State(initialState = {}) {
   this.bt = initialState.bt;
   this.devices = initialState.devices || [];
   this.on = initialState.on;
-  this.color = initialState.color || "#FFFFFF";
+  this.color = initialState.color || nconf.get('DEFAULT_COLOR');
 
   this.set = (prop, value) => {
     this[prop] = value;
@@ -26,8 +26,10 @@ function State(initialState = {}) {
 
 const main = async () => {
   const state = new State();
+  const bt = await initBluetooth()
+  await startScan(bt);
 
-  state.set("bt", await initBluetooth());
+  state.set("bt", bt);
 
   state.bt.on("discover", async device => {
     if (isPlaybulb(device)) {
@@ -38,9 +40,10 @@ const main = async () => {
       } catch (err) {
         console.error(red(err));
       }
-
-      debug("Connected to", name);
+      
       state.devices.push(device);
+      debug(`Connected to ${name} (${state.devices.length} devices total)`);
+
       if (!state.color) {
         const buffer = await read(device, handle);
         const color = [...buffer];
@@ -52,8 +55,6 @@ const main = async () => {
       }
     }
   });
-
-  await startScan(state.bt);
 
   if (nconf.get("BOT")) {
     debug("Starting Telegram bot");
