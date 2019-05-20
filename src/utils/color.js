@@ -1588,8 +1588,17 @@ const hexToRgb = hex => {
     : null;
 };
 
+const parseColorString = color => {
+  try {
+    return JSON.parse(color)
+  } catch (e) {
+    return color
+  }
+}
+
 module.exports = {
   colors,
   findColor,
-  hexToRgb
+  hexToRgb,
+  parseColorString,
 };

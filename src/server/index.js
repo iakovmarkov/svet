@@ -5,6 +5,7 @@ const KoaBody = require("koa-bodyparser");
 const auth = require("koa-basic-auth");
 const { graphqlKoa, graphiqlKoa } = require("apollo-server-koa");
 const nconf = require("../utils/config");
+const { parseColorString } = require("../utils/color");
 const { makeExecutableSchema } = require("graphql-tools");
 const { setOn, setOff, setColor } = require("../backend/playbulbController");
 const _ = require("lodash/fp");
@@ -50,7 +51,8 @@ const createServer = state => {
         return state;
       },
       setColor: (__, { color }) => {
-        setColor(state, color);
+        const finalColor = parseColorString(color)
+        setColor(state, finalColor);
         return state;
       }
     }
