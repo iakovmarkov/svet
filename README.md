@@ -65,7 +65,6 @@ A good starting point for your Systemd unit:
     [Install]
     WantedBy=multi-user.target
 
-
 ## Requirements
 * `node` v8.0.0 or higher
 * A bluetooth adapter
