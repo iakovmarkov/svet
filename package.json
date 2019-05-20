@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "deploy": "ansible-playbook ./.ci/svet.yml",
+    "deploy:master": "DEPLOY=master ansible-playbook ./.ci/svet.yml",
     "dev": "DEBUG='svet:*' nodemon src/index.js --bot --web",
     "start": "DEBUG='svet:*' node src/index.js --bot --web",
     "lint": "eslint src/**/*.js",

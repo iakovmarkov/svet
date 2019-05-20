@@ -7,15 +7,20 @@
     service:
       name: svet
       state: stopped
-  - name: copy app
+  - name: copy local Svet
+    when: lookup('env', 'DEPLOY') != 'master'
     synchronize:
       src: '../../'
-      dest: /home/pi/svet
-#  - name: get latet Svet
-#    git:
-#      repo: 'git@github.com:iakovmarkov/svet.git'
-#      dest: /home/pi/svet
-#      accept_hostkey: yes
+      dest: /home/pi/sve
+  - name: get latet Svet
+    when: lookup('env', 'DEPLOY') == 'master'
+    block:
+    - file: path=/home/pi/svet state=absent
+    - file: path=/home/pi/svet state=directory
+    - git:
+        repo: 'git@github.com:iakovmarkov/svet.git'
+        dest: /home/pi/svet
+        accept_hostkey: yes
   - name: install packages
     npm:
       path: /home/pi/svet
