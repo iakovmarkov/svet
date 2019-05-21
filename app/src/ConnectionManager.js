@@ -1,46 +1,31 @@
-import React from "react";
 import { ApolloClient } from "apollo-client";
-import { ApolloProvider } from "react-apollo";
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
 
-import { ConfigContext } from "./ConfigManager";
+export class ConnectionManager {
+  static client
 
-const debug = require("debug")("svet:app:connection");
-
-export const ConnectionContext = React.createContext();
-
-export class ConnectionManager extends React.Component {
-  static checkConnection(url) {
-    console.warn('NYI - CheckConnection')
+  static checkConnection(config) {
+    console.warn('NYI - CheckConnection', config)
     return true;
   }
 
-  render() {
-    const children = (
-      <ConnectionContext.Provider value={0}>
-        {this.props.children}
-      </ConnectionContext.Provider>
-    )
+  static createClient(config) {
+    const cache = new InMemoryCache();
 
-    return (
-        <ConfigContext.Consumer>
-          {({ config }) => {
-            if (config.SERVER_URL) {
-              try {
-                const client = new ApolloClient({
-                  uri: config.SERVER_URL
-                });
+    const link = new HttpLink({
+      uri: config.SERVER_URL
+    })
 
-                return (
-                  <ApolloProvider client={client}>
-                    {children}
-                  </ApolloProvider>
-                );
-              } catch (e) {}
-            }
+    const client = new ApolloClient({
+      cache,
+      link
+    })
 
-            return children;
-          }}
-        </ConfigContext.Consumer>
-    );
+    console.log('Client config: ', config)
+
+    ConnectionManager.client = client
+
+    return client
   }
 }

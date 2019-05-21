@@ -17,14 +17,20 @@
   },
   "dependencies": {
     "@react-native-community/async-storage": "^1.4.0",
+    "apollo-cache-inmemory": "^1.5.1",
     "apollo-client": "^2.5.1",
+    "apollo-link-http": "^1.5.14",
     "debug": "^4.1.1",
     "expo": "^32.0.0",
+    "expo-hsv-color-picker": "0.0.3",
     "graphql": "^14.3.0",
+    "graphql-tag": "^2.10.1",
     "native-base": "^2.12.1",
     "react": "16.5.0",
     "react-apollo": "^2.5.5",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
+    "react-native-color": "0.0.10",
+    "react-native-color-picker": "^0.4.0",
     "react-navigation": "^3.11.0"
   },
   "devDependencies": {

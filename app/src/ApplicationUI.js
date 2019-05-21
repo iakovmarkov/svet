@@ -1,26 +1,29 @@
 import React from "react";
 import { Root } from "native-base";
-import { ConfigContext } from "./ConfigManager";
+import { createBottomTabNavigator, createAppContainer } from "react-navigation";
+
 import { HomeScreen } from "./screens/HomeScreen";
+import { CustomScreen } from "./screens/CustomScreen";
 import { ConfigurationScreen } from "./screens/ConfigurationScreen";
 
-export class ApplicationUI extends React.Component {
-  static contextType = ConfigContext;
+const Navigation = createAppContainer(createBottomTabNavigator(
+  {
+    Home: { screen: HomeScreen },
+    Custom: { screen: CustomScreen },
+    Configuration: { screen: ConfigurationScreen },
+  }, {
+    headerMode: 'none'
+  }
+));
 
+export class ApplicationUI extends React.Component {
   render() {
+    const { config } = this.props
+
     return (
       <Root>
-        <ConfigContext.Consumer>
-          {({ config }) => {
-            if (config.SERVER_URL) {
-              return <HomeScreen />;
-            }
-            return <ConfigurationScreen wrap />;
-          }}
-        </ConfigContext.Consumer>
+        {config.SERVER_URL ? <Navigation /> : <ConfigurationScreen />}
       </Root>
     );
   }
 }
-
-ApplicationUI.contextType = ConfigContext;
