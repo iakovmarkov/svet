@@ -1,21 +1,44 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Container, Content, Spinner } from 'native-base';
+import { Font } from 'expo';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ConfigManager } from './src/ConfigManager'
+import { ConnectionManager } from './src/ConnectionManager'
+import { ApplicationUI } from './src/ApplicationUI'
 
 export default class App extends React.Component {
+  state = {
+    ready: false,
+  }
+
+  async componentDidMount() {
+    await Font.loadAsync({
+      'Roboto': require('native-base/Fonts/Roboto.ttf'),
+      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
+      ...Ionicons.font,
+    });
+
+    this.setState({ ready: true })
+  }
+
   render() {
-    return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-      </View>
-    );
+    if (this.state.ready) {
+      return (
+        <ConfigManager>
+          <ConnectionManager>
+            <ApplicationUI />
+          </ConnectionManager>
+        </ConfigManager>
+      )
+    } else {
+      return (
+        <Container>
+          <Content>
+            <Spinner />
+          </Content>
+        </Container>
+      )
+    }
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
