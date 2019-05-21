@@ -12,7 +12,8 @@ import {
   CardItem,
   Spinner,
   Button,
-  Right
+  Right,
+  Toast
 } from "native-base";
 import _ from "lodash";
 import { Col, Row, Grid } from "react-native-easy-grid";
@@ -69,7 +70,7 @@ export class HomeScreen extends React.Component {
     this.refreshColors();
   }
 
-  refreshColors(n = 30) {
+  refreshColors(n = 32) {
     const hardColors = [
       "Ivory",
       "red",
@@ -79,7 +80,8 @@ export class HomeScreen extends React.Component {
       "salmon",
       "dawn",
       "lime",
-      "torch red"
+      "torch red",
+      "rock spray"
     ];
 
     const colors = hardColors.concat(
@@ -94,6 +96,7 @@ export class HomeScreen extends React.Component {
   pickRandom() {
     const color = _.sample(colorUtils.colors)[1];
     this.props.mutationSetColor({ variables: { color } });
+    Toast.show({ text: `${color}` });
   }
 
   render() {
@@ -133,15 +136,26 @@ export class HomeScreen extends React.Component {
               const color = this.state.colors[i + j];
               if (color) {
                 const buttonColor = colorUtils.findColor(color) || {};
+                const buttonStyle = {
+                  backgroundColor: `rgba(${buttonColor[1]}, ${
+                    buttonColor[2]
+                  }, ${buttonColor[3]}, 1)`,
+                  width: "90%",
+                  height: "90%",
+                  margin: "5%"
+                };
                 const button = (
                   <Col key={j}>
                     <Button
                       block
-                      style={{
-                        backgroundColor: `rgba(${buttonColor[1]}, ${
-                          buttonColor[2]
-                        }, ${buttonColor[3]}, 1)`
-                      }}
+                      style={buttonStyle}
+                      light={
+                        colorUtils.contrastingColor([
+                          buttonColor[1],
+                          buttonColor[2],
+                          buttonColor[3]
+                        ]) === "light"
+                      }
                       onPress={async () => {
                         try {
                           await this.props.mutationSetColor({
@@ -153,7 +167,9 @@ export class HomeScreen extends React.Component {
                         }
                       }}
                     >
-                      <Text>{color}</Text>
+                      <Text numberOfLines={2} style={{ fontSize: 8 }}>
+                        {color}
+                      </Text>
                     </Button>
                   </Col>
                 );
@@ -169,9 +185,22 @@ export class HomeScreen extends React.Component {
           content = content || <Grid>{colorButtons}</Grid>;
 
           const bgColor = (data.color && data.color.split(",")) || [];
+          const titleStyle = {
+            color:
+              colorUtils.contrastingColor([
+                bgColor[0],
+                bgColor[1],
+                bgColor[2]
+              ]) === "light"
+                ? "#000000"
+                : "#FFFFFF"
+          };
 
           return (
-            <Container>
+            <Container style={{
+              backgroundColor: `rgba(${bgColor[0]}, ${bgColor[1]}, ${
+                bgColor[2]
+              }, 0.2)`}}>
               <Header
                 style={{
                   backgroundColor: `rgb(${bgColor[0]}, ${bgColor[1]}, ${
@@ -180,23 +209,22 @@ export class HomeScreen extends React.Component {
                 }}
               >
                 <Body>
-                  <Title>Svet Home</Title>
+                  <Title style={titleStyle}>Svet Home</Title>
                 </Body>
                 <Right>
-                  <Button icon onPress={() => this.pickRandom()} rounded>
+                  <Button transparent onPress={() => this.pickRandom()}>
                     <Icon name="shuffle" />
                   </Button>
-                  <Button icon onPress={() => this.refreshColors()} rounded>
+                  <Button transparent onPress={() => this.refreshColors()}>
                     <Icon name="refresh" />
                   </Button>
                   <Button
-                    icon
+                    transparent
                     onPress={() =>
                       data.on
                         ? this.props.mutationOff()
                         : this.props.mutationOn()
                     }
-                    rounded
                   >
                     <Icon name={data.on ? "sunny" : "moon"} />
                   </Button>
