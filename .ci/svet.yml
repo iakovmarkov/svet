@@ -11,7 +11,7 @@
     when: lookup('env', 'DEPLOY') != 'master'
     synchronize:
       src: '../../'
-      dest: /home/pi/sve
+      dest: /home/pi/svet
   - name: get latet Svet
     when: lookup('env', 'DEPLOY') == 'master'
     block:
