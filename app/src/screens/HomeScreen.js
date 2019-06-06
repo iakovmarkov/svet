@@ -1,4 +1,6 @@
 import React from "react";
+import { View } from "react-native";
+import { Constants } from "expo";
 import { Query, Mutation, graphql } from "react-apollo";
 import {
   Container,
@@ -15,6 +17,7 @@ import {
   Right,
   Toast
 } from "native-base";
+import variables from 'native-base/src/theme/variables/platform'
 import _ from "lodash";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import gql from "graphql-tag";
@@ -102,7 +105,7 @@ export class HomeScreen extends React.Component {
   render() {
     return (
       <Query query={query} pollInterval={1000}>
-        {({ data, loading, error, refetch }) => {
+        {({ data = {}, loading, error, refetch }) => {
           let content;
 
           if (loading) {
@@ -167,7 +170,7 @@ export class HomeScreen extends React.Component {
                         }
                       }}
                     >
-                      <Text numberOfLines={2} style={{ fontSize: 8 }}>
+                      <Text numberOfLines={2} style={{ fontSize: 10 }}>
                         {color}
                       </Text>
                     </Button>
@@ -197,10 +200,14 @@ export class HomeScreen extends React.Component {
           };
 
           return (
-            <Container style={{
-              backgroundColor: `rgba(${bgColor[0]}, ${bgColor[1]}, ${
-                bgColor[2]
-              }, 0.2)`}}>
+            <Container
+              style={{
+                paddingTop: Constants.statusBarHeight,
+                backgroundColor: `rgb(${bgColor[0]}, ${bgColor[1]}, ${
+                  bgColor[2]
+                })`
+              }}
+            >
               <Header
                 style={{
                   backgroundColor: `rgb(${bgColor[0]}, ${bgColor[1]}, ${
@@ -230,7 +237,18 @@ export class HomeScreen extends React.Component {
                   </Button>
                 </Right>
               </Header>
-              {content}
+              <View style={{ height: '100%', backgroundColor: "#FFFFFF" }}>
+                <View
+                  style={{ height: '100%', 
+                  paddingBottom: 5 + variables.footerHeight,
+                    backgroundColor: `rgba(${bgColor[0]}, ${bgColor[1]}, ${
+                      bgColor[2]
+                    }, .1)`
+                  }}
+                >
+                  {content}
+                </View>
+              </View>
             </Container>
           );
         }}

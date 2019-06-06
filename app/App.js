@@ -1,9 +1,11 @@
 import React from "react";
 import { ApolloProvider } from "react-apollo";
-import { Container, Content, Spinner } from "native-base";
+import {
+  BallIndicator,
+} from 'react-native-indicators';
 import { Font } from "expo";
 import { Ionicons } from "@expo/vector-icons";
-
+import variables from 'native-base/src/theme/variables/platform'
 import { ConfigManager } from "./src/ConfigManager";
 import { ConnectionManager } from "./src/ConnectionManager";
 import { ApplicationUI } from "./src/ApplicationUI";
@@ -34,8 +36,10 @@ export default class App extends React.Component {
       ...newConfig
     };
 
+    console.log('handleConfigChange start', config)
     await ConfigManager.setConfig(config);
     this.setState({ ready: true, config });
+    console.log('handleConfigChange end', config)
   }
 
   render() {
@@ -53,11 +57,7 @@ export default class App extends React.Component {
       );
     } else {
       return (
-        <Container>
-          <Content>
-            <Spinner />
-          </Content>
-        </Container>
+        <BallIndicator color={variables.brandSuccess} />
       );
     }
   }

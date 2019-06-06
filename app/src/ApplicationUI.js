@@ -16,9 +16,6 @@ const Navigation = createAppContainer(
   createBottomTabNavigator(routes, {
     headerMode: "none",
     tabBarComponent: props => {
-      console.log("keys", Object.keys(props.navigation));
-      console.log("state", props.navigation.state);
-
       return (
         <Footer>
           <FooterTab>

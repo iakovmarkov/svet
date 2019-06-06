@@ -3,12 +3,12 @@ import { AsyncStorage } from "react-native"
 export const DEFAULT_CONFIG = {
   BASIC_LOGIN: null,
   BASIC_PASSWORD: null,
-  SERVER_URL: 'http://192.168.1.100/',
+  SERVER_URL: null,
 }
 
 export class ConfigManager {
   // 4 & 7
-  static KEY = '@svet:config_7'
+  static KEY = '@svet:config_8'
 
   static async getConfig() {
     let config = DEFAULT_CONFIG
