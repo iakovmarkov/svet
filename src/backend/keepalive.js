@@ -1,19 +1,15 @@
 const debug = require("debug")("svet:keepalive");
 const nconf = require("../utils/config");
+const sleep = require("../utils/sleep");
 
 const { connect } = require("./bluetoothController");
 const { getName } = require("./playbulbConfig");
-const { pipe, filter, map, join, size } = require("lodash/fp");
+const { filter, size } = require("lodash/fp");
 const ms = require("pretty-ms");
-
-const KEEPALIVE_INTERVAL = nconf.get("KEEPALIVE_INTERVAL");
-
-const sleep = async timeout =>
-  new Promise(resolve => setInterval(resolve, timeout));
 
 const keepalive = async state => {
   while (true) {
-    await sleep(KEEPALIVE_INTERVAL);
+    await sleep(nconf.get("KEEPALIVE_INTERVAL"));
 
     const connectedDevices = filter(
       device => device.state === "connected",

@@ -2,17 +2,15 @@ const debug = require("debug")("svet:telegraf");
 const Telegraf = require("telegraf");
 const bluetoothctl = require("bluetoothctl");
 const _ = require("lodash/fp");
-const { get, includes, pipe, split, map, size, join, slice, filter } = _;
+const { get, includes, pipe, split, map, size, join, filter } = _;
 const { setOn, setOff, setColor } = require("../backend/playbulbController");
 const { connect } = require("../backend/bluetoothController");
 const { getName } = require("../backend/playbulbConfig");
-const { colors } = require("../utils/color");
 const nconf = require("../utils/config");
+const sleep = require("../utils/sleep");
 
 const TOKEN = nconf.get("TOKEN");
 const ALLOWED_USERS = nconf.get("ALLOWED_USERS");
-
-const sleep = t => new Promise(resolve => setTimeout(resolve, t));
 
 const authMiddleware = (ctx, next) => {
   const username = get(["from", "username"])(ctx);
@@ -26,7 +24,7 @@ const authMiddleware = (ctx, next) => {
   }
 };
 
-const serviceCommands = ["/restart", "/reconnect", "/help"];
+const serviceCommands = ["/reconnect", "/help"];
 const devicesMiddleware = state => (ctx, next) => {
   const isServiceMessage = pipe(
     get(["message", "text"]),
@@ -58,8 +56,6 @@ const replyHelp = ctx => {
 /set - Sets the lights to specified color
 /devices - Lists connected devices
 /reconnect - Tries to reconnect to all devices
-/colors - Lists known colors
-/restart - Restarts the bot and reconnects to all lights
     `);
 };
 
@@ -88,22 +84,6 @@ const replyDevices = ctx => {
   );
 };
 
-const replyColors = ctx => {
-  const COLORS_PER_MSG = 10;
-  const n = colors.length;
-  const colorNames = colors.map(([_, colorName]) => colorName);
-
-  ctx.reply(`Here is the list of all colors I know (${n}):`);
-
-  for (let i = 0; i < n; i += COLORS_PER_MSG) {
-    const chunk = pipe(
-      slice(i, i + COLORS_PER_MSG),
-      join(", ")
-    )(colorNames);
-    ctx.reply(chunk);
-  }
-};
-
 const replyOff = ctx => {
   ctx.reply("Turning off all lights.");
   setOff(ctx.state);
@@ -122,12 +102,6 @@ const replySet = ctx => {
   } catch (e) {
     ctx.reply(e);
   }
-};
-
-const replyRestart = ctx => {
-  ctx.reply("Goodbye, cruel world.");
-  debug("Restart requested. Hope you've got pm2 set up. Goodbye, cruel world.");
-  setTimeout(() => process.exit(1), 250);
 };
 
 const replyReconnect = async ctx => {
@@ -187,19 +161,13 @@ const createBot = state => {
 
   bot.command("devices", replyDevices);
 
-  bot.command("colors", replyColors);
-
   bot.command("off", replyOff);
 
   bot.command("on", replyOn);
 
   bot.command("set", replySet);
 
-  bot.command("restart", replyRestart);
-
   bot.command("reconnect", replyReconnect);
-
-  // bot.on('message', replyGeneric)
 
   bot.startPolling();
 
