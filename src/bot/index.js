@@ -3,7 +3,7 @@ const Telegraf = require("telegraf");
 const bluetoothctl = require("bluetoothctl");
 const _ = require("lodash/fp");
 const { get, includes, pipe, split, map, size, join, filter } = _;
-const { setOn, setOff, setColor } = require("../backend/playbulbController");
+const { setOn, setOff, setColor, setGradient } = require("../backend/playbulbController");
 const { connect } = require("../backend/bluetoothController");
 const { getName } = require("../backend/playbulbConfig");
 const nconf = require("../utils/config");
@@ -54,6 +54,7 @@ const replyHelp = ctx => {
 /on - Turns on all lights
 /off - Turns off all lights
 /set - Sets the lights to specified color
+/gradient - Starts to cycle lights bettween two colors
 /devices - Lists connected devices
 /reconnect - Tries to reconnect to all devices
     `);
@@ -92,6 +93,16 @@ const replyOff = ctx => {
 const replyOn = ctx => {
   ctx.reply("Turning lights back on");
   setOn(ctx.state);
+};
+
+const replyGradient = ctx => {
+  const colors = ctx.message.text.replace("/gradient ", "").split(" ");
+  try {
+    setGradient(ctx.state, colors);
+    ctx.reply(`Started gradient between ${colors[0]} and ${colors[1]}`);
+  } catch (e) {
+    ctx.reply(e);
+  }
 };
 
 const replySet = ctx => {
@@ -158,15 +169,11 @@ const createBot = state => {
   bot.use(devicesMiddleware(state));
 
   bot.command("help", replyHelp);
-
   bot.command("devices", replyDevices);
-
   bot.command("off", replyOff);
-
   bot.command("on", replyOn);
-
   bot.command("set", replySet);
-
+  bot.command("gradient", replyGradient);
   bot.command("reconnect", replyReconnect);
 
   bot.startPolling();

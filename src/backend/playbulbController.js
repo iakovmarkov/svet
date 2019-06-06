@@ -4,6 +4,7 @@ const { identity } = _;
 const { write, connect } = require("./bluetoothController");
 const { getConfig, getName } = require("./playbulbConfig");
 const { findColor } = require("../utils/color");
+const sleep = require("../utils/sleep");
 
 const setAllColors = async (devices, newColor) => {
   devices.forEach(async device => {
@@ -43,6 +44,31 @@ const setColor = (state, color) => {
     throw new Error(`Can't find a match for ${color}`);
   }
 };
+
+const setGradient = (state, colors) => {
+  const from = findColor(colors[0])
+  const to = findColor(colors[1])
+
+  if (!from) {
+    throw new Error(`Can't find a match for ${from}`);
+  }
+  if (!to) {
+    throw new Error(`Can't find a match for ${to}`);
+  }
+
+  state.set("on", true);
+  gradientLoop(from, to)
+};
+
+async function gradientLoop(from, to) {
+  const STEPS = 5
+  const DELAY = 5000
+  let step = 0
+  while (true) {
+    await sleep(DELAY)
+    console.warn("NYI: Gradient")
+  }
+}
 
 module.exports = {
   setOn,
