@@ -59,14 +59,14 @@ const write = (device, handle, data) =>
   });
 
 const connect = device =>
-  new Promise((resolve, reject) => {
-    return device.connect(err => {
-      if (err) {
-        reject(err);
-      }
-      resolve(err);
-    });
-  });
+  new Promise(async resolve => {
+    try {
+      await device.connect()
+      resolve()
+    } catch (e) {
+      console.error("Connecting to device failed", e)
+    }
+  })
 
 const startScan = bt =>
   new Promise(resolve => {

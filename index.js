@@ -165,6 +165,7 @@ class Svet {
   }
 
   _setAllColors(color) {
+    color = color || nconf.get("DEFAULT_COLOR")
     this.devices.forEach(async device => {
       if (device.state !== "connected") {
         debug(

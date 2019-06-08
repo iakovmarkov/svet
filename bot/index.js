@@ -8,6 +8,7 @@ const bt = require("../utils/bt");
 const playbulb = require("../utils/playbulb");
 const nconf = require("../utils/config");
 const sleep = require("../utils/sleep");
+const colors = require("../utils/colors");
 
 const TOKEN = nconf.get("TOKEN");
 const ALLOWED_USERS = nconf.get("ALLOWED_USERS");
@@ -95,7 +96,7 @@ const replyGradient = ctx => {
 const replySet = ctx => {
   const color = ctx.message.text.replace("/set ", "");
   try {
-    ctx.svet.setColor(color);
+    ctx.svet.setColor(colors.findColor(color) || color);
     ctx.reply(`Set the colors to ${color}`);
   } catch (e) {
     ctx.reply(e);
