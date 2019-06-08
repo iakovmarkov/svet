@@ -5,10 +5,42 @@ const KoaBody = require("koa-bodyparser");
 const auth = require("koa-basic-auth");
 const { graphqlKoa, graphiqlKoa } = require("apollo-server-koa");
 const { makeExecutableSchema } = require("graphql-tools");
+const chroma = require("chroma-js");
 const _ = require("lodash/fp");
 const { get, map, matches } = _;
 
 const nconf = require("../utils/config");
+
+const typeDefs = `    
+  type Gradient {
+    from: String
+    to: String
+    current: String
+    speed: Int
+    steps: Int
+    step: Int
+  }
+
+  type Query {
+    devices: [Device]
+    on: Boolean
+    mode: String
+    color: String
+    gradient: Gradient
+  }
+  
+  type Device {
+    name: String
+    connected: Boolean
+  }
+  
+  type Mutation {
+    turnOn: Query
+    turnOff: Query
+    setColor(color: String!): Query
+    setGradient(from: String!, to: String!, steps: Int, speed: Int): Query
+  }
+`;
 
 const createWebServer = svet => {
   const app = new Koa();
@@ -34,10 +66,15 @@ const createWebServer = svet => {
       on: () => {
         return svet.on;
       },
+      mode: () => {
+        return svet.mode;
+      },
       color: () => {
-        const color = svet.color.slice(1, 4);
-        return color.toString();
-      }
+        return svet.color ? chroma(svet.color).toString() : ''
+      },
+      gradient: () => {
+        return svet.gradient;
+      },
     },
 
     Mutation: {
@@ -52,28 +89,13 @@ const createWebServer = svet => {
       setColor: (__, { color }) => {
         svet.toggle(color)
         return svet;
-      }
+      },
+      setGradient: (__, { from, to, steps, speed }) => {
+        svet.setGradient(from, to, steps, speed)
+        return svet;
+      },
     }
   };
-
-  const typeDefs = `
-    type Query {
-      devices: [Device]
-      on: Boolean
-      color: String
-    }
-    
-    type Device {
-      name: String
-      connected: Boolean
-    }
-    
-    type Mutation {
-      turnOn: Query
-      turnOff: Query
-      setColor(color: String!): Query
-    }
-  `;
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
 

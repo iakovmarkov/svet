@@ -1,3 +1,5 @@
+const chroma = require('chroma-js')
+
 const colors = [
   ["000080", "Navy Blue"],
   ["0000C8", "Dark Blue"],
@@ -1572,8 +1574,7 @@ const findColor = colorName =>
     }
     const [code, name] = curr;
     if (name.toLowerCase() === colorName.toLowerCase()) {
-      const { r, g, b } = hexToRgb(`#${code}`);
-      return [0, r, g, b];
+      return chroma(code).rgb()
     }
   }, null);
 

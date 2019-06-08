@@ -23,6 +23,7 @@ class Svet {
   constructor () {
     debug('Svet initializing')
     this.devices = []
+    this.gradient = {}
     this.mode = Svet.MODE.color
     this.on = false
 
@@ -109,7 +110,9 @@ class Svet {
   }
 
   setColor(color) {
+    debug('Setting color to', color)
     clearInterval(this.gradientLoop)
+    this.mode = Svet.MODE.color
     this.color = color
     this._setColor()
   }
@@ -118,24 +121,31 @@ class Svet {
     this._setAllColors(this.color)
   }
 
-  setGradient(from, to, steps = 5, speed = 500) {
+  setGradient(from, to, steps = 100, speed = 10000) {
+    debug(`Starting to rotate between ${from} to ${to} in ${steps} steps every ${ms(speed)}.`)
     clearInterval(this.gradientLoop)
+    this.mode = Svet.MODE.gradient
     this.gradient = { from, to, steps, speed }
     this._setGradient()
   }
 
   _setGradient() {
+    let step = 0
     const { from, to, steps, speed } = this.gradient
     const scale = chroma.scale([from, to]).domain([0, steps])
-    let step = 0
+    
+    this._setAllColors(scale(step))
 
-    this.gradientLoop = setInterval(async () => {
-      await this.setColor(scale(step))
+    this.gradientLoop = setInterval(() => {
       if (step < steps) {
         step += 1
       } else {
         step -= 1
       }
+      const current = scale(step)
+
+      this._setAllColors(current)
+      this.gradient = { ...this.gradient, current, step }
     }, speed)
   }
 
@@ -147,9 +157,7 @@ class Svet {
         if (value) {
           this._setGradient()
         } else {
-          if (this.gradientLoop) {
-            clearInterval(this.gradientLoop)
-          }
+          clearInterval(this.gradientLoop)
           this._setAllColors([0 ,0, 0])
         }
         break;
@@ -165,7 +173,9 @@ class Svet {
   }
 
   _setAllColors(color) {
-    color = color || nconf.get("DEFAULT_COLOR")
+    color = chroma(color || nconf.get("DEFAULT_COLOR"))
+    debug('Setting all colors to', color.toString())
+
     this.devices.forEach(async device => {
       if (device.state !== "connected") {
         debug(
@@ -174,8 +184,9 @@ class Svet {
         await bt.connect(device);
         debug(`Reconnected to ${playbulb.getName(device)}.`);
       }
+
       const { handle } = playbulb.getConfig(device);
-      const finalColor = [0, ...chroma(color).rgb()]
+      const finalColor = [0, ...color.rgb()]
       bt.write(device, handle, finalColor);
     });
   }

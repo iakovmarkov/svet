@@ -89,7 +89,7 @@ const replyGradient = ctx => {
     ctx.svet.setGradient(colors[0], colors[1]);
     ctx.reply(`Started gradient between ${colors[0]} and ${colors[1]}`);
   } catch (e) {
-    ctx.reply(e);
+    ctx.reply(e.toString ? e.toString() : 'Something went wrong');
   }
 };
 
@@ -99,7 +99,7 @@ const replySet = ctx => {
     ctx.svet.setColor(colors.findColor(color) || color);
     ctx.reply(`Set the colors to ${color}`);
   } catch (e) {
-    ctx.reply(e);
+    ctx.reply(e.toString ? e.toString() : 'Something went wrong');
   }
 };
 
