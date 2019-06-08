@@ -4,14 +4,13 @@ const KoaRouter = require("koa-router");
 const KoaBody = require("koa-bodyparser");
 const auth = require("koa-basic-auth");
 const { graphqlKoa, graphiqlKoa } = require("apollo-server-koa");
-const nconf = require("../utils/config");
-const { parseColorString } = require("../utils/color");
 const { makeExecutableSchema } = require("graphql-tools");
-const { setOn, setOff, setColor } = require("../backend/playbulbController");
 const _ = require("lodash/fp");
 const { get, map, matches } = _;
 
-const createServer = state => {
+const nconf = require("../utils/config");
+
+const createWebServer = svet => {
   const app = new Koa();
   const router = new KoaRouter();
 
@@ -30,30 +29,29 @@ const createServer = state => {
         return map(device => ({
           name: get(["advertisement", "localName"], device),
           connected: matches({ state: "connected" }, device)
-        }))(state.devices);
+        }))(svet.devices);
       },
       on: () => {
-        return state.on;
+        return svet.on;
       },
       color: () => {
-        const color = state.color.slice(1, 4);
+        const color = svet.color.slice(1, 4);
         return color.toString();
       }
     },
 
     Mutation: {
       turnOn: () => {
-        setOn(state);
-        return state;
+        svet.toggle(true)
+        return svet;
       },
       turnOff: () => {
-        setOff(state);
-        return state;
+        svet.toggle(false)
+        return svet;
       },
       setColor: (__, { color }) => {
-        const finalColor = parseColorString(color)
-        setColor(state, finalColor);
-        return state;
+        svet.toggle(color)
+        return svet;
       }
     }
   };
@@ -90,4 +88,4 @@ const createServer = state => {
   );
 };
 
-module.exports = createServer;
+module.exports = createWebServer;

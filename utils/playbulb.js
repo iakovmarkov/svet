@@ -1,18 +1,17 @@
-// const debug = require('debug')('svet:config')
 const { get, pipe, map, find, includes, matches } = require("lodash/fp");
 
 const configs = [
   {
     name: "PLAYBULB sphere",
-    color: "0x0029"
+    handle: "0x0029"
   },
   {
     name: "MIPOW SMART BULB",
-    color: "0x001b"
+    handle: "0x001b"
   },
   {
     name: "PLAYBULB comet",
-    color: "0x0023"
+    handle: "0x0023"
   }
 ];
 

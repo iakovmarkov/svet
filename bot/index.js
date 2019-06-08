@@ -3,9 +3,9 @@ const Telegraf = require("telegraf");
 const bluetoothctl = require("bluetoothctl");
 const _ = require("lodash/fp");
 const { get, includes, pipe, split, map, size, join, filter } = _;
-const { setOn, setOff, setColor, setGradient } = require("../backend/playbulbController");
-const { connect } = require("../backend/bluetoothController");
-const { getName } = require("../backend/playbulbConfig");
+
+const bt = require("../utils/bt");
+const playbulb = require("../utils/playbulb");
 const nconf = require("../utils/config");
 const sleep = require("../utils/sleep");
 
@@ -19,32 +19,24 @@ const authMiddleware = (ctx, next) => {
   if (shouldRespond) {
     next();
   } else {
-    debug(`User ${username} isn't in allowed_usernames; Dropping message.`);
+    debug(`User ${username} isn't in ${ALLOWED_USERS}; Dropping message.`);
     ctx.reply(`I don't know you, go away!`);
   }
 };
 
-const serviceCommands = ["/reconnect", "/help"];
-const devicesMiddleware = state => (ctx, next) => {
+const devicesMiddleware = (ctx, next) => {
   const isServiceMessage = pipe(
     get(["message", "text"]),
     split(" "),
     get(0),
-    includes(_, serviceCommands)
+    includes(_, ["/reconnect", "/help"])
   )(ctx);
+  const deviceList = filter(device => device.state === "connected")(ctx.svet.devices);
 
-  if (isServiceMessage) {
+  if (isServiceMessage || size(deviceList)) {
     next();
   } else {
-    const deviceList = filter(device => device.state === "connected")(
-      state.devices
-    );
-    if (size(deviceList)) {
-      next();
-    } else {
-      debug("Not connected to any device.");
-      ctx.reply(`Oops, I think I'm not connected to any Playbulb`);
-    }
+    ctx.reply(`Oops, I think I'm not connected to any Playbulb`);
   }
 };
 
@@ -61,44 +53,39 @@ const replyHelp = ctx => {
 };
 
 const replyDevices = ctx => {
-  const {
-    state: { devices }
-  } = ctx;
-  const deviceList = pipe(
+  const devices = ctx.svet.devices
+  const connectedDevices = pipe(
     filter(device => device.state === "connected"),
-    map(device => getName(device))
+    map(device => playbulb.getName(device))
   )(devices);
-  const n = pipe(
-    filter(device => device.state === "connected"),
-    size
-  )(devices);
-  const s = n > 1 ? "s" : "";
-  const otherDeviceCount = size(devices) - size(deviceList);
-  const otherDevices = otherDeviceCount
-    ? ` I also sense ${otherDeviceCount} other devices nearby.`
-    : "";
+
+  const otherDeviceCount = size(devices) - size(connectedDevices);
+
   ctx.reply(
-    `I'm connected to ${n} device${s}: ${join(
-      ", ",
-      deviceList
-    )}.${otherDevices}`
+    `I'm connected to ${size(connectedDevices)} device${size(devices) > 1 ? "s" : ""}: ${join(", ", connectedDevices)}`
   );
+  
+  if (otherDeviceCount) {
+    ctx.reply(
+      `There are also ${otherDeviceCount} other device${size(devices) > 1 ? "s" : ""} nearby.`
+    );
+  }
 };
 
 const replyOff = ctx => {
   ctx.reply("Turning off all lights.");
-  setOff(ctx.state);
+  ctx.svet.toggle(false)
 };
 
 const replyOn = ctx => {
   ctx.reply("Turning lights back on");
-  setOn(ctx.state);
+  ctx.svet.toggle(true)
 };
 
 const replyGradient = ctx => {
   const colors = ctx.message.text.replace("/gradient ", "").split(" ");
   try {
-    setGradient(ctx.state, colors);
+    ctx.svet.setGradient(colors[0], colors[1]);
     ctx.reply(`Started gradient between ${colors[0]} and ${colors[1]}`);
   } catch (e) {
     ctx.reply(e);
@@ -108,7 +95,7 @@ const replyGradient = ctx => {
 const replySet = ctx => {
   const color = ctx.message.text.replace("/set ", "");
   try {
-    setColor(ctx.state, color);
+    ctx.svet.setColor(color);
     ctx.reply(`Set the colors to ${color}`);
   } catch (e) {
     ctx.reply(e);
@@ -116,12 +103,10 @@ const replySet = ctx => {
 };
 
 const replyReconnect = async ctx => {
-  const {
-    state: { devices }
-  } = ctx;
+  const devices = ctx.svet.devices
   const connectedDevices = [];
   const disconnectedDevices = filter(
-    device => device.state !== "connected",
+    device => device.svet !== "connected",
     devices
   );
   ctx.reply(`Trying to reconnect to ${size(disconnectedDevices)} devices.`);
@@ -131,21 +116,21 @@ const replyReconnect = async ctx => {
   debug(
     `Trying to reconnect to ${size(
       disconnectedDevices
-    )} devices: ${disconnectedDevices.map(device => getName(device))}`
+    )} devices: ${disconnectedDevices.map(device => playbulb.getName(device))}`
   );
   await Promise.all(
     disconnectedDevices.map(
       device =>
         new Promise(async (resolve, reject) => {
           try {
-            await connect(device);
+            await bt.connect(device);
           } catch (err) {
-            debug(`Error connecting to device ${getName(device)}: ${err}`);
-            ctx.reply(`Sorry, I couldn't connect to ${getName(device)} :(`);
+            debug(`Error connecting to device ${playbulb.getName(device)}: ${err}`);
+            ctx.reply(`Sorry, I couldn't connect to ${playbulb.getName(device)} :(`);
             reject(err);
           }
-          debug(`Reconnected to ${getName(device)} (state=${device.state})`);
-          connectedDevices.push(getName(device));
+          debug(`Reconnected to ${playbulb.getName(device)} (svet=${device.svet})`);
+          connectedDevices.push(playbulb.getName(device));
           resolve();
         })
     )
@@ -161,12 +146,12 @@ const replyReconnect = async ctx => {
   }
 };
 
-const createBot = state => {
+const createBot = svet => {
   const bot = new Telegraf(TOKEN);
-  bot.context.state = state;
+  bot.context.svet = svet;
 
   bot.use(authMiddleware);
-  bot.use(devicesMiddleware(state));
+  bot.use(devicesMiddleware);
 
   bot.command("help", replyHelp);
   bot.command("devices", replyDevices);
