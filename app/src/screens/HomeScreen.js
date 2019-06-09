@@ -1,26 +1,20 @@
 import React from "react";
 import { View } from "react-native";
-import { Constants } from "expo";
-import { Query, Mutation, graphql } from "react-apollo";
+import { Query, graphql } from "react-apollo";
 import {
-  Container,
-  Header,
-  Title,
-  Body,
-  Icon,
-  Content,
   Text,
   Card,
   CardItem,
   Spinner,
   Button,
-  Right,
-  Toast
+  Body,
 } from "native-base";
-import variables from 'native-base/src/theme/variables/platform'
 import _ from "lodash";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import gql from "graphql-tag";
+
+import { AppContainer, AppHeader } from '../components/AppUI'
+
 import colorUtils from "../utils/colors";
 
 const query = gql`
@@ -41,29 +35,11 @@ const mutationSetColor = gql`
   }
 `;
 
-const mutationOn = gql`
-  mutation turnOn {
-    turnOn {
-      on
-    }
-  }
-`;
-
-const mutationOff = gql`
-  mutation turnOff {
-    turnOff {
-      on
-    }
-  }
-`;
-
 const refetchQueries = () => {
   return [{ query }];
 };
 
 @graphql(mutationSetColor, { name: "mutationSetColor" })
-@graphql(mutationOn, { name: "mutationOn" })
-@graphql(mutationOff, { name: "mutationOff" })
 export class HomeScreen extends React.Component {
   state = {
     colors: []
@@ -96,15 +72,9 @@ export class HomeScreen extends React.Component {
     this.setState({ colors });
   }
 
-  pickRandom() {
-    const color = _.sample(colorUtils.colors)[1];
-    this.props.mutationSetColor({ variables: { color } });
-    Toast.show({ text: `${color}` });
-  }
-
   render() {
     return (
-      <Query query={query} pollInterval={1000}>
+      <Query query={query}>
         {({ data = {}, loading, error, refetch }) => {
           let content;
 
@@ -119,6 +89,7 @@ export class HomeScreen extends React.Component {
           );
 
           if (error) {
+            console.log(error)
             content = (
               <Card>
                 <CardItem>
@@ -187,69 +158,15 @@ export class HomeScreen extends React.Component {
 
           content = content || <Grid>{colorButtons}</Grid>;
 
-          const bgColor = (data.color && data.color.split(",")) || [];
-          const titleStyle = {
-            color:
-              colorUtils.contrastingColor([
-                bgColor[0],
-                bgColor[1],
-                bgColor[2]
-              ]) === "light"
-                ? "#000000"
-                : "#FFFFFF"
-          };
-
           return (
-            <Container
-              style={{
-                paddingTop: Constants.statusBarHeight,
-                backgroundColor: `rgb(${bgColor[0]}, ${bgColor[1]}, ${
-                  bgColor[2]
-                })`
-              }}
-            >
-              <Header
-                style={{
-                  backgroundColor: `rgb(${bgColor[0]}, ${bgColor[1]}, ${
-                    bgColor[2]
-                  })`
-                }}
-              >
-                <Body>
-                  <Title style={titleStyle}>Svet Home</Title>
-                </Body>
-                <Right>
-                  <Button transparent onPress={() => this.pickRandom()}>
-                    <Icon name="shuffle" />
-                  </Button>
-                  <Button transparent onPress={() => this.refreshColors()}>
-                    <Icon name="refresh" />
-                  </Button>
-                  <Button
-                    transparent
-                    onPress={() =>
-                      data.on
-                        ? this.props.mutationOff()
-                        : this.props.mutationOn()
-                    }
-                  >
-                    <Icon name={data.on ? "sunny" : "moon"} />
-                  </Button>
-                </Right>
-              </Header>
+            <AppContainer>
+              <AppHeader>Svet Home</AppHeader>
               <View style={{ height: '100%', backgroundColor: "#FFFFFF" }}>
-                <View
-                  style={{ height: '100%', 
-                  paddingBottom: 5 + variables.footerHeight,
-                    backgroundColor: `rgba(${bgColor[0]}, ${bgColor[1]}, ${
-                      bgColor[2]
-                    }, .1)`
-                  }}
-                >
+                <View style={{ height: '100%' }} >
                   {content}
                 </View>
               </View>
-            </Container>
+            </AppContainer>
           );
         }}
       </Query>

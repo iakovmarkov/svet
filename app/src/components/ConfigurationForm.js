@@ -1,7 +1,6 @@
 import React from "react";
 import { Label, Form, Item, Input, Button, Text, Toast } from "native-base";
-import { ConnectionManager } from "../ConnectionManager";
-import { ConfigManager } from "../ConfigManager";
+import { Context } from "../AppContext";
 
 class Field extends React.Component {
   render() {
@@ -19,11 +18,11 @@ class Field extends React.Component {
   }
 }
 
-export class ConfigurationForm extends React.Component {
+class _ConfigurationForm extends React.Component {
   state = {};
 
-  componentWillMount() {
-    this.setState(this.props.initialValues);
+  constructor() {
+    this.state = this.props.initialValues
   }
 
   createInputHandler(field) {
@@ -34,8 +33,7 @@ export class ConfigurationForm extends React.Component {
 
   async onSave() {
     try {
-      await ConnectionManager.checkConnection(this.state.SERVER_URL);
-      await ConfigManager.setConfig(this.state)
+      await this.props.setConfig(this.state)
     } catch (e) {
       console.error("Connecting to Svet server failed:", e);
 
@@ -90,3 +88,11 @@ export class ConfigurationForm extends React.Component {
     );
   }
 }
+
+export const ConfigurationForm = (props) => (
+  <Context.Consumer>
+    {({ config, handleConfigChange }) => (
+      <_ConfigurationForm setConfig={handleConfigChange} initialValues={config} {...props}></_ConfigurationForm>
+    )}
+  </Context.Consumer>
+)

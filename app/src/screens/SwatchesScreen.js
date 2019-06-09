@@ -2,11 +2,11 @@ import React from 'react';
 import { AppContainer, AppHeader } from '../components/AppUI'
 import { Body, Content,Text, Card, CardItem } from "native-base";
 
-export class CustomScreen extends React.Component {
+export class SwatchesScreen extends React.Component {
   render() {
     return (
       <AppContainer>
-        <AppHeader>Custom Color</AppHeader>
+        <AppHeader>Swatches</AppHeader>
         <Content padder>
           <Card>
             <CardItem>

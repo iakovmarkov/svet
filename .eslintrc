@@ -4,6 +4,10 @@
     "prettier/react",
     "plugin:react/recommended"
   ],
+  "rules": {
+    "react/prop-types": 0,
+    "react/display-name": 0,
+  },
   "plugins": [
     "babel",
     "react"
@@ -21,7 +25,8 @@
       "experimentalObjectRestSpread": true,
       "modules": true,
       "destructuring": true,
-      "spread": true
+      "spread": true,
+      "legacyDecorators": true
     }
   }
 }

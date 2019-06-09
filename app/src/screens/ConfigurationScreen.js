@@ -1,29 +1,21 @@
 import React from "react";
-import { Container, Header, Content, Body, Title } from "native-base";
+import { Text } from "react-native";
+import { Content } from "native-base";
 
-import { Context } from "../AppContext";
+import { AppContainer, AppHeader } from '../components/AppUI'
 import { ConfigurationForm } from "../components/ConfigurationForm";
 
 export class ConfigurationScreen extends React.Component {
   render() {
     return (
-      <Container>
-        <Header>
-          <Body>
-            <Title>Svet Configuration</Title>
-          </Body>
-        </Header>
+      <AppContainer>
+        <AppHeader noSwitch>
+          <Text>Settings</Text>
+        </AppHeader>
         <Content padder>
-          <Context.Consumer>
-            {({ config, handleConfigChange }) => (
-              <ConfigurationForm
-                initialValues={config}
-                onSave={handleConfigChange}
-              />
-            )}
-          </Context.Consumer>
+          <ConfigurationForm />
         </Content>
-      </Container>
+      </AppContainer>
     );
   }
 }

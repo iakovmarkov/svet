@@ -35,8 +35,7 @@ const typeDefs = `
   }
   
   type Mutation {
-    turnOn: Query
-    turnOff: Query
+    toggle(value: Boolean!): Query
     setColor(color: String!): Query
     setGradient(from: String!, to: String!, steps: Int, speed: Int): Query
   }
@@ -78,12 +77,8 @@ const createWebServer = svet => {
     },
 
     Mutation: {
-      turnOn: () => {
-        svet.toggle(true)
-        return svet;
-      },
-      turnOff: () => {
-        svet.toggle(false)
+      toggle: (__, { value }) => {
+        svet.toggle(value)
         return svet;
       },
       setColor: (__, { color }) => {
