@@ -1,175 +1,132 @@
 import React from "react";
-import { View } from "react-native";
-import { Query, graphql } from "react-apollo";
-import {
-  Text,
-  Card,
-  CardItem,
-  Spinner,
-  Button,
-  Body,
-} from "native-base";
-import _ from "lodash";
-import { Col, Row, Grid } from "react-native-easy-grid";
-import gql from "graphql-tag";
+import { View} from "react-native";
+import { Button, Icon } from "native-base";
+import _ from "lodash/fp";
+import { Row, Grid } from "react-native-easy-grid";
 
-import { AppContainer, AppHeader } from '../components/AppUI'
+import { AppContainer, AppHeader } from "../components/AppUI";
+import { HomeScreenRow } from "../components/HomeScreenRow";
 
-import colorUtils from "../utils/colors";
+import colors from "shared/colors";
 
-const query = gql`
-  {
-    devices {
-      name
-    }
-    color
-    on
-  }
-`;
+const favorites = [
+  { type: 'color', code: "FFFFF0", name: "Ivory" },
+  { type: 'color', code: "660099", name: "Purple" },
+  { type: 'color', code: "008080", name: "Teal" },
+  { type: 'color', code: "240A40", name: "Violet" },
+  { type: 'color', code: "FF8C69", name: "Salmon" },
+  { type: 'color', code: "A6A29A", name: "Dawn" },
+  { type: 'color', code: "BFFF00", name: "Lime" },
+  { type: 'color', code: "FD0E35", name: "Torch Red" },
+  { type: 'color', code: "BA450C", name: "Rock Spray" }
+];
 
-const mutationSetColor = gql`
-  mutation setColor($color: String!) {
-    setColor(color: $color) {
-      color
-    }
-  }
-`;
-
-const refetchQueries = () => {
-  return [{ query }];
-};
-
-@graphql(mutationSetColor, { name: "mutationSetColor" })
 export class HomeScreen extends React.Component {
-  state = {
-    colors: []
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      swatches: [],
+      gradients: []
+    };
+  }
 
   componentDidMount() {
-    this.refreshColors();
+    this.setState({
+      swatches: this._generateSwatches(),
+      gradients: this._generateGradients()
+    });
   }
 
-  refreshColors(n = 32) {
-    const hardColors = [
-      "Ivory",
-      "red",
-      "purple",
-      "teal",
-      "violet",
-      "salmon",
-      "dawn",
-      "lime",
-      "torch red",
-      "rock spray"
-    ];
+  _generateSwatches() {
+    const swatches = _.pipe(
+      _.sampleSize(20),
+      _.map(([code, name]) => ({ code, name }))
+    )(colors);
 
-    const colors = hardColors.concat(
-      _.sampleSize(colorUtils.colors, n - hardColors.length).map(
-        color => color[1]
-      )
-    );
+    return swatches;
+  }
 
-    this.setState({ colors });
+  _generateGradients() {
+    const gradients = _.pipe(
+      _.sampleSize(20),
+      _.map(([code, name]) => ({ code, name }))
+    )(colors);
+
+    return [];
   }
 
   render() {
-    return (
-      <Query query={query}>
-        {({ data = {}, loading, error, refetch }) => {
-          let content;
+    const viewStyle = { flex: 1 };
+    const { swatches, gradients } = this.state;
 
-          if (loading) {
-            content = <Spinner />;
-          }
-
-          const refetchBtn = (
-            <Button block transparent onPress={() => refetch()}>
-              <Text>Refetch</Text>
-            </Button>
-          );
-
-          if (error) {
-            console.log(error)
-            content = (
-              <Card>
-                <CardItem>
-                  <Body>
-                    <Text>Error: {JSON.stringify(error)}</Text>
-                    {refetchBtn}
-                  </Body>
-                </CardItem>
-              </Card>
-            );
-          }
-
-          const colorButtons = [];
-          const COLS = 4;
-          for (let i = 0; i < this.state.colors.length; i = i + COLS) {
-            const buttons = [];
-            for (let j = 0; j < COLS; j++) {
-              const color = this.state.colors[i + j];
-              if (color) {
-                const buttonColor = colorUtils.findColor(color) || {};
-                const buttonStyle = {
-                  backgroundColor: `rgba(${buttonColor[1]}, ${
-                    buttonColor[2]
-                  }, ${buttonColor[3]}, 1)`,
-                  width: "90%",
-                  height: "90%",
-                  margin: "5%"
-                };
-                const button = (
-                  <Col key={j}>
-                    <Button
-                      block
-                      style={buttonStyle}
-                      light={
-                        colorUtils.contrastingColor([
-                          buttonColor[1],
-                          buttonColor[2],
-                          buttonColor[3]
-                        ]) === "light"
-                      }
-                      onPress={async () => {
-                        try {
-                          await this.props.mutationSetColor({
-                            variables: { color },
-                            onError: (...args) => console.error(args)
-                          });
-                        } catch (e) {
-                          console.error(e);
-                        }
-                      }}
-                    >
-                      <Text numberOfLines={2} style={{ fontSize: 10 }}>
-                        {color}
-                      </Text>
-                    </Button>
-                  </Col>
-                );
-                buttons.push(button);
-              } else {
-                buttons.push(<Col key={j} />);
-              }
+    const content = (
+      <Grid>
+        <Row>
+          <HomeScreenRow title="Favorites" colors={favorites} />
+        </Row>
+        <Row>
+          <HomeScreenRow
+            title="Recents"
+            button={
+              <Button
+                small
+                transparent
+                onPress={() => {
+                  console.warn("nyi");
+                }}
+              >
+                <Icon name="trash" />
+              </Button>
             }
-            const row = <Row key={i}>{buttons}</Row>;
-            colorButtons.push(row);
-          }
+          />
+        </Row>
+        <Row>
+          <HomeScreenRow
+            title="Swatches"
+            colors={swatches}
+            button={
+              <Button
+                small
+                transparent
+                onPress={() => {
+                  const swatches = this._generateSwatches();
 
-          content = content || <Grid>{colorButtons}</Grid>;
+                  this.setState({ swatches });
+                }}
+              >
+                <Icon name="shuffle" />
+              </Button>
+            }
+          />
+        </Row>
+        <Row>
+          <HomeScreenRow
+            title="Gradients"
+            colors={gradients}
+            button={
+              <Button
+                small
+                transparent
+                onPress={() => {
+                  const gradients = this._generateGradients();
 
-          return (
-            <AppContainer>
-              <AppHeader>Svet Home</AppHeader>
-              <View style={{ height: '100%', backgroundColor: "#FFFFFF" }}>
-                <View style={{ height: '100%' }} >
-                  {content}
-                </View>
-              </View>
-            </AppContainer>
-          );
-        }}
-      </Query>
+                  this.setState({ gradients });
+                }}
+              >
+                <Icon name="shuffle" />
+              </Button>
+            }
+          />
+        </Row>
+      </Grid>
+    );
+
+    return (
+      <AppContainer>
+        <AppHeader>Svet Home</AppHeader>
+        <View style={viewStyle}>{content}</View>
+      </AppContainer>
     );
   }
 }

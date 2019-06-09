@@ -82,7 +82,7 @@ const createWebServer = svet => {
         return svet;
       },
       setColor: (__, { color }) => {
-        svet.toggle(color)
+        svet.setColor(color)
         return svet;
       },
       setGradient: (__, { from, to, steps, speed }) => {

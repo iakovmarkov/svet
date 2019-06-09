@@ -25,6 +25,7 @@ class Svet {
     this.devices = []
     this.gradient = {}
     this.mode = Svet.MODE.color
+    this.color = nconf.get('DEFAULT_COLOR')
     this.on = false
 
     this._initBluetooth()
@@ -59,7 +60,7 @@ class Svet {
         this.devices.push(device);
         debug(`Connected to ${name} (${this.devices.length} devices total)`);
   
-        if (!this.color) {
+        if (!this.color || this.color === nconf.get('DEFAULT_COLOR')) {
           const buffer = await bt.read(device, handle);
           const color = [...buffer];
           debug("Read current color:", color);
@@ -130,27 +131,32 @@ class Svet {
   }
 
   _setGradient() {
-    let step = 0
+    let delta = 1
+    this.gradient.step = 0
     const { from, to, steps, speed } = this.gradient
     const scale = chroma.scale([from, to]).domain([0, steps])
     
-    this._setAllColors(scale(step))
+    this._setAllColors(scale(this.gradient.step))
 
     this.gradientLoop = setInterval(() => {
-      if (step < steps) {
-        step += 1
-      } else {
-        step -= 1
+      this.gradient.step = this.gradient.step + delta
+      if (this.gradient.step === steps) {
+        delta = 1
+      } else if (this.gradient.step === 0) {
+        delta = -1
       }
-      const current = scale(step)
+      
+      const current = scale(this.gradient.step)
 
       this._setAllColors(current)
-      this.gradient = { ...this.gradient, current, step }
+      this.gradient = { ...this.gradient, current }
+      this.color = current
     }, speed)
   }
 
   toggle(value) {
     this.on = value
+    clearInterval(this.gradientLoop)
 
     switch(this.mode) {
       case Svet.MODE.gradient:
