@@ -5,6 +5,7 @@ import { Text, Icon } from "native-base";
 import _ from "lodash/fp";
 import gql from "graphql-tag";
 
+import { withContext } from '../AppContext'
 import { ColorTile } from "../components/ColorTile";
 
 const mutationSetColor = gql`
@@ -16,7 +17,8 @@ const mutationSetColor = gql`
 `;
 
 export const HomeScreenRow = compose(
-  graphql(mutationSetColor, { name: "setColor" })
+  graphql(mutationSetColor, { name: "setColor" }),
+  withContext,
 )(({ title, colors, button, setColor }) => {
   const viewStyle = {
     flex: 1,

@@ -2,7 +2,7 @@ const nconf = require("nconf");
 const path = require("path");
 
 const DEFAULTS = {
-  DEFAULT_COLOR: "cream",
+  DEFAULT_COLOR: "#FFFDD0",
   KEEPALIVE_INTERVAL: 30 * 1000,
   PORT: 8080
 };

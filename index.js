@@ -73,6 +73,9 @@ class Svet {
   async keepalive() {
     while (true) {
       await sleep(nconf.get("KEEPALIVE_INTERVAL"));
+      const color = this.on
+        ? [0, ...chroma(this.color || nconf.get("DEFAULT_COLOR")).rgb()]
+        : [0, 0, 0, 0]
   
       const connectedDevices = filter(
         device => device.state === "connected",
@@ -103,6 +106,10 @@ class Svet {
           `Device ${playbulb.getName(device)} is not connected, trying to reconnect...`
         );
         await bt.connect(device);
+
+        const { handle } = playbulb.getConfig(device);
+        await bt.write(device, handle, color);
+        
         debug(`Connected to ${playbulb.getName(device)} (${this.devices.length} devices total)`);
       });
   
