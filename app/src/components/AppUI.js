@@ -15,17 +15,19 @@ import {
   Switch,
   Spinner
 } from "native-base";
+import variables from 'native-base/src/theme/variables/platform'
 import chroma from "chroma-js";
 
 export const AppContainer = ({ children }) => (
-      <Container
-        style={{
-          paddingTop: Constants.statusBarHeight
-        }}
-      >
-        {children}
-      </Container>
-    );
+  <Container
+    style={{
+      borderTopColor: variables.brandPrimary,
+      borderTopWidth: Constants.statusBarHeight,
+    }}
+  >
+    {children}
+  </Container>
+);
 
 const query = gql`
   {
@@ -58,23 +60,24 @@ export const AppHeader = compose(
         proxy.writeQuery({ query, data: { ...data, ...toggle } });
       }
     })
-  }),
+  })
 )(
   ({
     children = "Svet",
     navigation,
-    data: { on, loading, color = "red" } = {},
+    data: { on, color = "red" } = {},
+    loading,
     mutation,
     noSwitch
   }) => (
-    <Header>
-      <Left>
+    <Header noShadow>
+      <Left  style={{ flex: 0 }}>
         <Button transparent onPress={() => navigation.toggleDrawer()}>
           <Icon name="menu" />
         </Button>
       </Left>
       <Body>
-        <Title>{children}</Title>
+        <Title style={{ marginLeft: 5 }}>{children}</Title>
       </Body>
       {!noSwitch && (
         <Right>
@@ -100,4 +103,4 @@ export const AppHeader = compose(
       )}
     </Header>
   )
-)
+);

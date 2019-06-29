@@ -10,9 +10,9 @@
     ],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/resources/logo.png",
+    "icon": "./assets/icon.png",
     "splash": {
-      "image": "./src/resources/splash.jpg",
+      "image": "./assets/splash.png",
       "resizeMode": "cover"
     },
     "updates": {
@@ -23,6 +23,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": "",
+    "githubUrl": "https://github.com/iakovmarkov/svet"
   }
 }

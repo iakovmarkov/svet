@@ -122,6 +122,7 @@ class Svet {
     clearInterval(this.gradientLoop)
     this.mode = Svet.MODE.color
     this.color = color
+    this.on = true
     this._setColor()
   }
 
@@ -134,6 +135,7 @@ class Svet {
     clearInterval(this.gradientLoop)
     this.mode = Svet.MODE.gradient
     this.gradient = { from, to, steps, speed }
+    this.on = true
     this._setGradient()
   }
 

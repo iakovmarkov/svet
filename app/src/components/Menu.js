@@ -7,7 +7,7 @@ import packageJson from '../../package.json'
 export class Menu extends React.Component {
   render() {
     const link = 'https://github.com/iakovmarkov/svet/'
-    const routes = ["Home", "Swatches", "Gradient", "Custom", "Configuration"];
+    const routes = ["Home", /*"Swatches", "Gradient", "Custom",*/ "Configuration"];
     const footerStyle = {
       backgroundColor: "transparent",
       flexDirection: "column",

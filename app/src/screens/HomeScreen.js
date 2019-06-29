@@ -39,18 +39,20 @@ export class HomeScreen extends React.Component {
   }
 
   _generateSwatches() {
+    const type = 'color'
     const swatches = _.pipe(
       _.sampleSize(20),
-      _.map(([code, name]) => ({ code, name }))
+      _.map(([code, name]) => ({ code, name, type }))
     )(colors);
 
     return swatches;
   }
 
   _generateGradients() {
+    const type = 'gradient'
     const gradients = _.pipe(
       _.sampleSize(20),
-      _.map(([code, name]) => ({ code, name }))
+      _.map(([code, name]) => ({ code, name, type }))
     )(colors);
 
     return [];

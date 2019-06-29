@@ -8,16 +8,38 @@ import gql from "graphql-tag";
 import { withContext } from '../AppContext'
 import { ColorTile } from "../components/ColorTile";
 
+const query = gql`
+  {
+    color
+    on
+  }
+`;
+
 const mutationSetColor = gql`
   mutation setColor($color: String!) {
     setColor(color: $color) {
       color
+      on
     }
   }
 `;
 
+const options = (props) => {
+  console.log('--')
+  console.log('props', props)
+
+  return {
+    update: (proxy, { data: { setColor } }) => {
+      const data = proxy.readQuery({ query });
+      console.log('data', data)
+      console.log('setColor', setColor)
+      proxy.writeQuery({ query, data: { ...data, ...setColor } });
+    }
+  }
+}
+
 export const HomeScreenRow = compose(
-  graphql(mutationSetColor, { name: "setColor" }),
+  graphql(mutationSetColor, { name: "setColor", options }),
   withContext,
 )(({ title, colors, button, setColor }) => {
   const viewStyle = {
@@ -61,7 +83,6 @@ export const HomeScreenRow = compose(
 
   const handlePress = item => {
     if (item.type === "color") {
-      console.log(item.code);
       setColor({ variables: { color: item.code } });
     }
   };

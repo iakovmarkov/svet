@@ -2,27 +2,17 @@ import React from "react";
 import { Label, Form, Item, Input, Button, Text, Toast } from "native-base";
 import { Context } from "../AppContext";
 
-class Field extends React.Component {
-  render() {
-    const { onChange, label, placeholder, value } = this.props;
-    return (
-      <Item stackedLabel>
-        <Label>{label}</Label>
-        <Input
-          onChangeText={onChange}
-          placeholder={placeholder}
-          value={value}
-        />
-      </Item>
-    );
-  }
-}
+const Field = ({ onChange, label, placeholder, value }) => (
+  <Item stackedLabel>
+    <Label>{label}</Label>
+    <Input onChangeText={onChange} placeholder={placeholder} value={value} />
+  </Item>
+);
 
 class _ConfigurationForm extends React.Component {
-  state = {};
-
-  constructor() {
-    this.state = this.props.initialValues
+  constructor(props) {
+    super(props)
+    this.state = props.initialValues
   }
 
   createInputHandler(field) {
@@ -33,16 +23,17 @@ class _ConfigurationForm extends React.Component {
 
   async onSave() {
     try {
-      await this.props.setConfig(this.state)
+      await this.props.setConfig(this.state);
     } catch (e) {
       console.error("Connecting to Svet server failed:", e);
 
       Toast.show({
-        text: "Connection to Svet server failed! Please check that Svet is running and that the URL is correct.",
+        text:
+          "Connection to Svet server failed! Please check that Svet is running and that the URL is correct.",
         type: "danger"
       });
 
-      return
+      return;
     }
 
     Toast.show({
@@ -52,7 +43,7 @@ class _ConfigurationForm extends React.Component {
   }
 
   onReset() {
-    this.setState(this.props.initialValues);
+    throw new Error('aaa')
   }
 
   render() {
@@ -89,10 +80,14 @@ class _ConfigurationForm extends React.Component {
   }
 }
 
-export const ConfigurationForm = (props) => (
+export const ConfigurationForm = (props = {}) => (
   <Context.Consumer>
     {({ config, handleConfigChange }) => (
-      <_ConfigurationForm setConfig={handleConfigChange} initialValues={config} {...props}></_ConfigurationForm>
+      <_ConfigurationForm
+        setConfig={handleConfigChange}
+        initialValues={config}
+        {...props}
+      />
     )}
   </Context.Consumer>
-)
+);
