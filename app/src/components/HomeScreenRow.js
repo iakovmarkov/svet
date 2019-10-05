@@ -25,14 +25,9 @@ const mutationSetColor = gql`
 `;
 
 const options = (props) => {
-  console.log('--')
-  console.log('props', props)
-
   return {
     update: (proxy, { data: { setColor } }) => {
       const data = proxy.readQuery({ query });
-      console.log('data', data)
-      console.log('setColor', setColor)
       proxy.writeQuery({ query, data: { ...data, ...setColor } });
     }
   }

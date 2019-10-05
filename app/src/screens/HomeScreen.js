@@ -7,7 +7,7 @@ import { Row, Grid } from "react-native-easy-grid";
 import { AppContainer, AppHeader } from "../components/AppUI";
 import { HomeScreenRow } from "../components/HomeScreenRow";
 
-import colors from "shared/colors";
+import colors from "../shared/colors";
 
 const favorites = [
   { type: 'color', code: "FFFFF0", name: "Ivory" },

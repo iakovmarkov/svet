@@ -1,11 +1,12 @@
 import React from "react";
 import { ApolloProvider } from "react-apollo";
-import { Font } from "expo";
+import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
 import { AsyncStorage } from "react-native";
 import { ApolloClient } from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
+import { ApolloNetworkStatusProvider } from 'react-apollo-network-status';
 
 import { SplashScreen } from "./src/screens/SplashScreen";
 import { Navigator } from "./src/Navigator";
@@ -101,9 +102,11 @@ export default class App extends React.Component {
       const client = this._createClient();
       return (
         <ApolloProvider client={client}>
-          <Context.Provider value={contextValue}>
-            <Navigator />
-          </Context.Provider>
+          <ApolloNetworkStatusProvider>
+            <Context.Provider value={contextValue}>
+              <Navigator />
+            </Context.Provider>
+          </ApolloNetworkStatusProvider>
         </ApolloProvider>
       );
     } else {

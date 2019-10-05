@@ -107,13 +107,13 @@ const replyReconnect = async ctx => {
   const devices = ctx.svet.devices
   const connectedDevices = [];
   const disconnectedDevices = filter(
-    device => device.svet !== "connected",
+    device => device.state !== "connected",
     devices
   );
   ctx.reply(`Trying to reconnect to ${size(disconnectedDevices)} devices.`);
   bluetoothctl.Bluetooth();
   bluetoothctl.scan(true);
-  await sleep(1000);
+  await sleep(5000);
   debug(
     `Trying to reconnect to ${size(
       disconnectedDevices
@@ -130,7 +130,7 @@ const replyReconnect = async ctx => {
             ctx.reply(`Sorry, I couldn't connect to ${playbulb.getName(device)} :(`);
             reject(err);
           }
-          debug(`Reconnected to ${playbulb.getName(device)} (svet=${device.svet})`);
+          debug(`Reconnected to ${playbulb.getName(device)} (state=${device.state})`);
           connectedDevices.push(playbulb.getName(device));
           resolve();
         })

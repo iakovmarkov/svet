@@ -1,5 +1,5 @@
 const chroma = require('chroma-js')
-const colors = require('../shared/colors')
+const colors = require('../app/src/shared/colors')
 
 const findColor = colorName =>
   colors.reduce((res, curr) => {

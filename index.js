@@ -70,6 +70,52 @@ class Svet {
     });
   }
 
+  async reconnect () {
+    const connectedDevices = [];
+    const disconnectedDevices = this.devices.filter(device => device.state !== "connected");
+
+    if (disconnectedDevices.length) {
+      debug(
+        `Trying to reconnect to ${disconnectedDevices.length} devices: ${disconnectedDevices.map(device => playbulb.getName(device))}...`
+      );
+
+      bluetoothctl.Bluetooth();
+      bluetoothctl.scan(true);
+      await sleep(5000);
+
+      debug(`Let's go!`);
+      await Promise.all(
+        disconnectedDevices.map(
+          device =>
+            new Promise(async (resolve, reject) => {
+              try {
+                await bt.connect(device);
+              } catch (err) {
+                debug(`Error connecting to device ${playbulb.getName(device)}: ${err}`);
+                reject(err);
+              }
+              debug(`Reconnected to ${playbulb.getName(device)} (state=${device.state})`);
+              connectedDevices.push(playbulb.getName(device));
+              resolve();
+            })
+        )
+      );
+
+      if (connectedDevices.length) {
+        debug(
+          `Connected to ${connectedDevices.length} new devices: ${connectedDevices.join(
+            ", "
+          )}`
+        );
+      } else {
+        debug("Couldn't reconnect to any device :(");
+      }
+
+    } else {
+      debug('Everything is connected!')
+    }
+  }
+
   async keepalive() {
     while (true) {
       await sleep(nconf.get("KEEPALIVE_INTERVAL"));
@@ -150,9 +196,9 @@ class Svet {
     this.gradientLoop = setInterval(() => {
       this.gradient.step = this.gradient.step + delta
       if (this.gradient.step === steps) {
-        delta = 1
-      } else if (this.gradient.step === 0) {
         delta = -1
+      } else if (this.gradient.step === 0) {
+        delta = 1
       }
       
       const current = scale(this.gradient.step)

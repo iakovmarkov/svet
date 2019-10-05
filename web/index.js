@@ -38,6 +38,7 @@ const typeDefs = `
     toggle(value: Boolean!): Query
     setColor(color: String!): Query
     setGradient(from: String!, to: String!, steps: Int, speed: Int): Query
+    reconnect: Query
   }
 `;
 
@@ -89,6 +90,10 @@ const createWebServer = svet => {
         svet.setGradient(from, to, steps, speed)
         return svet;
       },
+      reconnect: async () => {
+        await svet.reconnect();
+        return svet;
+      }
     }
   };
 
