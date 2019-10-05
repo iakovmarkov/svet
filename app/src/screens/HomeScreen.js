@@ -1,5 +1,5 @@
 import React from "react";
-import { View} from "react-native";
+import { View } from "react-native";
 import { Button, Icon } from "native-base";
 import _ from "lodash/fp";
 import { Row, Grid } from "react-native-easy-grid";
@@ -10,15 +10,25 @@ import { HomeScreenRow } from "../components/HomeScreenRow";
 import colors from "../shared/colors";
 
 const favorites = [
-  { type: 'color', code: "FFFFF0", name: "Ivory" },
-  { type: 'color', code: "660099", name: "Purple" },
-  { type: 'color', code: "008080", name: "Teal" },
-  { type: 'color', code: "240A40", name: "Violet" },
-  { type: 'color', code: "FF8C69", name: "Salmon" },
-  { type: 'color', code: "A6A29A", name: "Dawn" },
-  { type: 'color', code: "BFFF00", name: "Lime" },
-  { type: 'color', code: "FD0E35", name: "Torch Red" },
-  { type: 'color', code: "BA450C", name: "Rock Spray" }
+  { type: "color", code: "FFFFF0", name: "Ivory" },
+  {
+    type: "gradient",
+    from: { code: "ff5db1", name: "Hotline" },
+    to: { code: "4CB7FF" }
+  },
+  {
+    type: "gradient",
+    from: { code: "FF1E22", name: "Police" },
+    to: { code: "027eea" }
+  },
+  { type: "color", code: "660099", name: "Purple" },
+  { type: "color", code: "008080", name: "Teal" },
+  { type: "color", code: "240A40", name: "Violet" },
+  { type: "color", code: "FF8C69", name: "Salmon" },
+  { type: "color", code: "A6A29A", name: "Dawn" },
+  { type: "color", code: "BFFF00", name: "Lime" },
+  { type: "color", code: "FD0E35", name: "Torch Red" },
+  { type: "color", code: "BA450C", name: "Rock Spray" }
 ];
 
 export class HomeScreen extends React.Component {
@@ -39,7 +49,7 @@ export class HomeScreen extends React.Component {
   }
 
   _generateSwatches() {
-    const type = 'color'
+    const type = "color";
     const swatches = _.pipe(
       _.sampleSize(20),
       _.map(([code, name]) => ({ code, name, type }))
@@ -49,13 +59,18 @@ export class HomeScreen extends React.Component {
   }
 
   _generateGradients() {
-    const type = 'gradient'
+    const type = "gradient";
     const gradients = _.pipe(
-      _.sampleSize(20),
-      _.map(([code, name]) => ({ code, name, type }))
+      _.sampleSize(40),
+      _.chunk(2),
+      _.map(([from, to]) => ({
+        from: { code: from[0], name: from[1] },
+        to: { code: to[0], name: to[1] },
+        type
+      }))
     )(colors);
 
-    return [];
+    return gradients;
   }
 
   render() {

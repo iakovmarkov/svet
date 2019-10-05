@@ -25,6 +25,7 @@
     "expo": "^35.0.0",
     "expo-constants": "~7.0.0",
     "expo-hsv-color-picker": "0.0.3",
+    "expo-linear-gradient": "~7.0.0",
     "graphql": "^14.3.0",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",

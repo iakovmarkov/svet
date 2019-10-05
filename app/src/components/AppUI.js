@@ -37,8 +37,8 @@ const mutation = gql`
 
 const getHeaderColor = (color = variables.brandPrimary) =>
   chroma(color)
-    .desaturate(1)
-    .darken();
+    .desaturate(.5)
+    .darken(.5);
 
 export const AppContainer = compose(graphql(query))(
   ({ children, data: { color, on, loading } }) => (
@@ -55,7 +55,7 @@ export const AppContainer = compose(graphql(query))(
 
 export const AppHeader = compose(
   withNavigation,
-  graphql(query)
+  graphql(query, { pollInterval: 1000 })
 )(
   ({
     children = "Svet",
