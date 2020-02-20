@@ -68,3 +68,6 @@ A good starting point for your Systemd unit:
 ## Requirements
 * `node` v8.0.0 or higher
 * A bluetooth adapter
+
+## Credits
+App photo by Jake Fagan on Unsplash

@@ -1,15 +1,10 @@
 import React from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import chroma from "chroma-js";
 import { LinearGradient } from "expo-linear-gradient";
+import { pipe, find, get } from "lodash/fp";
 
-export const Tile = props => {
-  if (props.item.type === "color") {
-    return <ColorTile {...props} />;
-  } else if (props.item.type === "gradient") {
-    return <GradientTile {...props} />;
-  }
-};
+import colors from "../shared/colors";
 
 const getTileStyle = () => ({
   flex: 1,
@@ -41,14 +36,32 @@ const getTextStyle = ({ backgroundColor }) => ({
   flexWrap: "wrap",
   color: chroma(backgroundColor).luminance() < 0.5 ? "#ffffff" : "#000000",
   textShadowColor:
-    chroma(backgroundColor).luminance() >= 0.5 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.3)",
-  textShadowRadius: 4,
+    chroma(backgroundColor).luminance() >= 0.5
+      ? "rgba(255, 255, 255, 0.7)"
+      : "rgba(0, 0, 0, 0.3)",
+  textShadowRadius: 4
 });
 
-const ColorTile = ({ item, onPress }) => {
-  const { code, name } = item;
+const getColorName = code => {
+  code = code.toUpperCase()
+  return (
+    pipe(
+      find(({ color }) => code.includes(color)),
+      get('name')
+    )(colors) || code
+  );
+};
 
-  const backgroundColor = chroma(code)
+const Title = ({ backgroundColor, name, code }) => (
+  <Text style={getTextStyle({ backgroundColor })}>
+    {name || getColorName(code)}
+  </Text>
+);
+
+const ColorTile = ({ item, onPress }) => {
+  const { color, name } = item;
+
+  const backgroundColor = chroma(color)
     .hex()
     .toString();
 
@@ -60,18 +73,33 @@ const ColorTile = ({ item, onPress }) => {
       }}
       onPress={() => onPress(item)}
     >
-      <Text style={getTextStyle({ backgroundColor })}>{name}</Text>
+      <Title backgroundColor={backgroundColor} name={name} code={color} />
     </TouchableOpacity>
   );
 };
 
 const GradientTile = ({ item, onPress }) => {
-  const { from, to } = item;
+  const {
+    name,
+    gradient: { from, to }
+  } = item;
+  let title = null;
+
+  if (name) {
+    title = <Title backgroundColor={from} name={name} />;
+  } else {
+    title = (
+      <React.Fragment>
+        <Title backgroundColor={from} code={from} />
+        <Title backgroundColor={from} code={to} />
+      </React.Fragment>
+    );
+  }
 
   return (
     <TouchableOpacity style={getTileStyle()} onPress={() => onPress(item)}>
       <LinearGradient
-        colors={[`#${from.code}`, `#${to.code}`]}
+        colors={[`#${from}`, `#${to}`]}
         start={[0.3, 0]}
         end={[0.7, 1]}
         locations={[0, 1]}
@@ -83,12 +111,15 @@ const GradientTile = ({ item, onPress }) => {
           position: "absolute"
         }}
       />
-      <Text style={getTextStyle({ backgroundColor: item.from.code })}>
-        {from.name}
-      </Text>
-      {to.name ? <Text style={getTextStyle({ backgroundColor: item.from.code })}>
-        {to.name}
-      </Text> : null}
+      {title}
     </TouchableOpacity>
   );
+};
+
+export const Tile = props => {
+  if (props.item.type === "color") {
+    return <ColorTile {...props} />;
+  } else if (props.item.type === "gradient") {
+    return <GradientTile {...props} />;
+  }
 };

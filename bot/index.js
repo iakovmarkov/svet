@@ -1,13 +1,10 @@
 const debug = require("debug")("svet:telegraf");
 const Telegraf = require("telegraf");
-const bluetoothctl = require("bluetoothctl");
 const _ = require("lodash/fp");
 const { get, includes, pipe, split, map, size, join, filter } = _;
 
-const bt = require("../utils/bt");
 const playbulb = require("../utils/playbulb");
 const nconf = require("../utils/config");
-const sleep = require("../utils/sleep");
 const colors = require("../utils/colors");
 
 const TOKEN = nconf.get("TOKEN");
@@ -104,47 +101,9 @@ const replySet = ctx => {
 };
 
 const replyReconnect = async ctx => {
-  const devices = ctx.svet.devices
-  const connectedDevices = [];
-  const disconnectedDevices = filter(
-    device => device.state !== "connected",
-    devices
-  );
-  ctx.reply(`Trying to reconnect to ${size(disconnectedDevices)} devices.`);
-  bluetoothctl.Bluetooth();
-  bluetoothctl.scan(true);
-  await sleep(5000);
-  debug(
-    `Trying to reconnect to ${size(
-      disconnectedDevices
-    )} devices: ${disconnectedDevices.map(device => playbulb.getName(device))}`
-  );
-  await Promise.all(
-    disconnectedDevices.map(
-      device =>
-        new Promise(async (resolve, reject) => {
-          try {
-            await bt.connect(device);
-          } catch (err) {
-            debug(`Error connecting to device ${playbulb.getName(device)}: ${err}`);
-            ctx.reply(`Sorry, I couldn't connect to ${playbulb.getName(device)} :(`);
-            reject(err);
-          }
-          debug(`Reconnected to ${playbulb.getName(device)} (state=${device.state})`);
-          connectedDevices.push(playbulb.getName(device));
-          resolve();
-        })
-    )
-  );
-  if (connectedDevices.length) {
-    ctx.reply(
-      `Connected to ${connectedDevices.length} devices: ${connectedDevices.join(
-        ", "
-      )}`
-    );
-  } else {
-    ctx.reply("Sorry, I couldn't connect to any device :(");
-  }
+  ctx.reply('Trying to reconnect...')
+  const res = await ctx.svet.reconnect()
+  ctx.reply(res)
 };
 
 const createBot = svet => {

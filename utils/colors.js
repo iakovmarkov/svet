@@ -6,9 +6,9 @@ const findColor = colorName =>
     if (res) {
       return res;
     }
-    const [code, name] = curr;
+    const { color, name } = curr;
     if (name.toLowerCase() === colorName.toLowerCase()) {
-      return chroma(code).rgb()
+      return chroma(color).rgb()
     }
   }, null);
 

@@ -21,12 +21,19 @@ const typeDefs = `
     step: Int
   }
 
+  type Recent {
+    type: String
+    color: String
+    gradient: Gradient
+  }
+
   type Query {
     devices: [Device]
     on: Boolean
     mode: String
     color: String
     gradient: Gradient
+    recents: [Recent]
   }
   
   type Device {
@@ -65,6 +72,9 @@ const createWebServer = svet => {
       },
       on: () => {
         return svet.on;
+      },
+      recents: () => {
+        return svet.recents.reverse();
       },
       mode: () => {
         return svet.mode;

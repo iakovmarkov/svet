@@ -23,10 +23,12 @@ class Svet {
   constructor () {
     debug('Svet initializing')
     this.devices = []
+    this.recents = []
     this.gradient = {}
     this.mode = Svet.MODE.color
     this.color = nconf.get('DEFAULT_COLOR')
     this.on = false
+    this.noble = null
 
     this._initBluetooth()
 
@@ -44,10 +46,10 @@ class Svet {
   }
 
   async _initBluetooth() {
-    const bluetooth = await bt.initBluetooth()
-    await bt.startScan(bluetooth);
+    this.noble = await bt.initBluetooth()
+    await bt.startScan(this.noble);
 
-    bluetooth.on("discover", async device => {
+    this.noble.on("discover", async device => {
       if (playbulb.isPlaybulb(device)) {
         const { name, handle } = playbulb.getConfig(device);
         debug("Playbulb found:", name);
@@ -74,14 +76,14 @@ class Svet {
     const connectedDevices = [];
     const disconnectedDevices = this.devices.filter(device => device.state !== "connected");
 
-    if (disconnectedDevices.length) {
+    await sleep(500);
+    bt.startScan(this.noble);
+    await sleep(5000);
+
+    if (disconnectedDevices.length > 0) {
       debug(
         `Trying to reconnect to ${disconnectedDevices.length} devices: ${disconnectedDevices.map(device => playbulb.getName(device))}...`
       );
-
-      bluetoothctl.Bluetooth();
-      bluetoothctl.scan(true);
-      await sleep(5000);
 
       debug(`Let's go!`);
       await Promise.all(
@@ -102,17 +104,17 @@ class Svet {
       );
 
       if (connectedDevices.length) {
-        debug(
+        return (
           `Connected to ${connectedDevices.length} new devices: ${connectedDevices.join(
             ", "
           )}`
         );
       } else {
-        debug("Couldn't reconnect to any device :(");
+        return ("Couldn't reconnect to any device :(");
       }
 
     } else {
-      debug('Everything is connected!')
+      return ('Everything is connected!')
     }
   }
 
@@ -151,21 +153,34 @@ class Svet {
         debug(
           `Device ${playbulb.getName(device)} is not connected, trying to reconnect...`
         );
-        await bt.connect(device);
 
-        const { handle } = playbulb.getConfig(device);
-        await bt.write(device, handle, color);
-        
-        debug(`Connected to ${playbulb.getName(device)} (${this.devices.length} devices total)`);
+        try {
+          await bt.connect(device);
+
+          const { handle } = playbulb.getConfig(device);
+          await bt.write(device, handle, color);
+          
+          debug(`Connected to ${playbulb.getName(device)} (${this.devices.length} devices total)`);
+        } catch (e) {
+          debug(`Couldn't connect to ${playbulb.getName(device)} (${this.devices.length} devices total)`);
+        }
       });
   
       debug(`Next scan in ${ms(nconf.get("KEEPALIVE_INTERVAL"))}`);
     }
   }
 
+  addToRecents(item) {
+    this.recents.push(item)
+    if (this.recents.length > nconf.get('RECENTS_SIZE')) {
+      this.recents = this.recents.slice(this.recents.length - nconf.get('RECENTS_SIZE'), nconf.get('RECENTS_SIZE'))
+    }
+  }
+
   setColor(color) {
     debug('Setting color to', color)
     clearInterval(this.gradientLoop)
+    this.addToRecents({ type: 'color', color: chroma(color).toString() })
     this.mode = Svet.MODE.color
     this.color = color
     this.on = true
@@ -177,10 +192,12 @@ class Svet {
   }
 
   setGradient(from, to, steps = 100, speed = 10000) {
+    const gradient = { from, to, steps, speed }
     debug(`Starting to rotate between ${from} to ${to} in ${steps} steps every ${ms(speed)}.`)
+    this.addToRecents({ type: 'gradient', gradient })
     clearInterval(this.gradientLoop)
     this.mode = Svet.MODE.gradient
-    this.gradient = { from, to, steps, speed }
+    this.gradient = gradient
     this.on = true
     this._setGradient()
   }

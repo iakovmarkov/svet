@@ -72,7 +72,7 @@ export class Menu extends React.Component {
           <ImageBackground
             source={require("../resources/splash.jpg")}
             style={{
-              height: 140,
+              height: 240,
               alignSelf: "stretch",
               justifyContent: "center",
               alignItems: "center"
