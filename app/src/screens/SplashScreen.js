@@ -14,7 +14,7 @@ export class SplashScreen extends React.Component {
           justifyContent: "center",
           alignItems: "center",
         }}
-        source={require("../resources/splash.jpg")}
+        source={require("../resources/splash_image.jpg")}
         resizeMode="cover"
       >
         <Image
