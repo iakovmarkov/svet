@@ -1,21 +1,15 @@
-import React from "react";
-import { Text } from "react-native";
-import { Content } from "native-base";
+import React, { useContext } from "react";
 
-import { AppContainer, AppHeader } from '../components/AppUI'
+import { AppContainer } from "../components/AppContainer";
 import { ConfigurationForm } from "../components/ConfigurationForm";
+import { ConfigContext } from '../../App'
 
-export class ConfigurationScreen extends React.Component {
-  render() {
-    return (
-      <AppContainer>
-        <AppHeader noSwitch>
-          <Text>Settings</Text>
-        </AppHeader>
-        <Content padder>
-          <ConfigurationForm />
-        </Content>
-      </AppContainer>
-    );
-  }
-}
+export const ConfigurationScreen = () => {
+  const { config, saveConfig } = useContext(ConfigContext)
+  
+  return (
+    <AppContainer>
+      <ConfigurationForm initialValues={config} onSave={saveConfig} />
+    </AppContainer>
+  );
+};

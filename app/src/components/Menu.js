@@ -1,22 +1,41 @@
 import React from "react";
-import { Image, ImageBackground, Linking } from "react-native";
-import { Container, Content, Footer, Text, List, ListItem, Toast } from "native-base";
-import Constants from "expo-constants";
-import packageJson from '../../package.json'
+import {
+  Image,
+  ImageBackground,
+  Linking,
+  ActivityIndicator,
+  View,
+  Text,
+  ToastAndroid,
+  TouchableOpacity
+} from "react-native";
+import {
+  DrawerContentScrollView,
+  DrawerItemList
+} from "@react-navigation/drawer";
+import packageJson from "../../package.json";
+import { useFela } from "react-fela";
 import gql from "graphql-tag";
-import { graphql, compose } from "react-apollo";
+import { useApolloNetworkStatus } from "react-apollo-network-status";
+import { useQuery, useMutation } from "react-apollo";
+import chroma from "../utils/chroma";
+import Constants from "expo-constants";
 
-const query = gql`
+const QUERY = gql`
   {
+    color
+    on
     devices {
       name
     }
   }
 `;
 
-const mutation = gql`
+const MUTATION_RECONNECT = gql`
   mutation reconnect {
     reconnect {
+      color
+      on
       devices {
         name
       }
@@ -24,92 +43,146 @@ const mutation = gql`
   }
 `;
 
-const options = (props) => {
-  return {
-    update: (proxy, { data: { reconnect } }) => {
-      const { devices } = reconnect
-      Toast.show({
-        text: `Connected to ${devices.length} devices`,
-        type: "success"
-      });
-
-      const data = proxy.readQuery({ query });
-      proxy.writeQuery({ query, data: {...data, devices } });
+const MUTATION_TOGGLE = gql`
+  mutation toggle($value: Boolean!) {
+    toggle(value: $value) {
+      color
+      on
     }
   }
-}
+`;
 
-const DeviceCounter = compose(
-  graphql(mutation, { options }),
-)(({ style, deviceCount, mutate }) => (
-  <Text style={style} onPress={() => mutate()}>{deviceCount} Devices Connected</Text>
-))
+const ruleSpinner = {
+  position: "absolute",
+  left: 5,
+  top: 5 + Constants.statusBarHeight
+};
 
-@graphql(query)
-export class Menu extends React.Component {
-  render() {
-    const { devices, color, on, loading } = this.props.data
+const ruleFooter = {
+  flex: 0,
+  flexDirection: "column",
+  justifyContent: "space-evenly",
+  padding: 8
+};
 
-    const link = 'https://github.com/iakovmarkov/svet/'
-    const routes = ["Home", /*"Swatches", "Gradient", "Custom",*/ "Configuration"];
+const ruleFooterText = {
+  flex: 0,
+  fontSize: 10,
+  margin: 1,
+  opacity: 0.2,
+  color: "black"
+};
 
-    const footerStyle = {
-      backgroundColor: "transparent",
-      flexDirection: "column",
-      justifyContent: "space-evenly",
-      padding: 8,
-    };
-    const footerTextStyle = {
-      flex: 1,
-      fontSize: 10,
-      opacity: 0.2,
-      color: "black"
-    };
+const ruleFooterLink = { ...ruleFooterText, textDecorationLine: "underline" };
 
-    return (
-      <Container>
-        <Content>
-          <ImageBackground
-            source={require("../resources/splash_image.jpg")}
-            style={{
-              height: 240,
-              alignSelf: "stretch",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <Image
-              source={require("../resources/logo_transparent.png")}
-              resizeMode="contain"
-              style={{ flex: 1 }}
-            />
-          </ImageBackground>
-          <List
-            dataArray={routes}
-            keyExtractor={(key) => key}
-            renderRow={data => {
-              return (
-                <ListItem
-                  button
-                  onPress={() => this.props.navigation.navigate(data)}
-                >
-                  <Text>{data}</Text>
-                </ListItem>
-              );
-            }}
-          />
-        </Content>
-        <Footer style={footerStyle}>
-          {
-            loading ? <Text style={footerTextStyle}>Loading</Text>
-            : <DeviceCounter style={footerTextStyle} deviceCount={devices.length} />
-          }
-          <Text style={footerTextStyle}>Svet v{packageJson.version}</Text>
-          <Text style={{...footerTextStyle, textDecorationLine: 'underline' }} onPress={() => Linking.openURL(link)}>
-            {link}
-          </Text>
-        </Footer>
-      </Container>
-    );
+const ruleMenu = { flex: 1 };
+
+const ruleImageBg = {
+  height: 240,
+  alignSelf: "stretch",
+  justifyContent: "center",
+  alignItems: "center"
+};
+
+const ruleImageLogo = { flex: 1 };
+
+const ruleIndicator = ({ on }) => ({
+  left: 0,
+  top: 0,
+  height: "100%",
+  width: "100%",
+  position: "absolute",
+  backgroundColor: "#000000",
+  opacity: on ? 0 : 0.5
+});
+
+const getTintColor = color => chroma(color).hex();
+
+const DeviceCounter = ({ devices, loading }) => {
+  const { css } = useFela();
+  const [reconnect] = useMutation(MUTATION_RECONNECT, {
+    update: (proxy, { data: { reconnect } }) => {
+      const { devices = [] } = reconnect;
+      ToastAndroid.show(
+        `Connected to ${devices.length} devices`,
+        ToastAndroid.SHORT
+      );
+
+      const data = proxy.readQuery({ query: QUERY });
+      proxy.writeQuery({ query: QUERY, data: { ...data, devices } });
+    }
+  });
+
+  return (
+    <TouchableOpacity onPress={reconnect}>
+      <Text style={css(ruleFooterText)}>
+        {loading ? "Loading" : `${devices && devices.length} Devices Connected`}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const Spinner = () => {
+  const { numPendingQueries, numPendingMutations } = useApolloNetworkStatus();
+  const { css } = useFela();
+
+  if (numPendingQueries || numPendingMutations) {
+    return <ActivityIndicator color="#ffffff" style={css(ruleSpinner)} />;
   }
-}
+  return null;
+};
+
+const Indicator = ({ on }) => {
+  const { css } = useFela({ on });
+
+  return <View style={css(ruleIndicator)} />;
+};
+
+export const Menu = props => {
+  const { css } = useFela();
+  const { data: { devices, on, color, loading } = {} } = useQuery(QUERY);
+  const [toggle] = useMutation(MUTATION_TOGGLE, {
+    variables: { value: !on },
+    update: (proxy, { data: { toggle } }) => {
+      const data = proxy.readQuery({ query: QUERY });
+      proxy.writeQuery({ query: QUERY, data: { ...data, ...toggle } });
+    }
+  });
+
+  const link = "https://github.com/iakovmarkov/svet/";
+
+  return (
+    <View style={css(ruleMenu)}>
+      <ImageBackground
+        source={require("../resources/splash_image.jpg")}
+        style={css(ruleImageBg)}
+      >
+        <Indicator on={on} />
+        <TouchableOpacity onPress={toggle}>
+          <Image
+            source={require("../resources/logo_transparent.png")}
+            resizeMode="contain"
+            style={css(ruleImageLogo)}
+          />
+        </TouchableOpacity>
+        <Spinner />
+      </ImageBackground>
+
+      <DrawerContentScrollView {...props}>
+        <DrawerItemList {...props} activeTintColor={getTintColor(color)} />
+      </DrawerContentScrollView>
+
+      <View style={css(ruleFooter)}>
+        <DeviceCounter
+          style={css(ruleFooterText)}
+          devices={devices}
+          loading={loading}
+        />
+        <Text style={css(ruleFooterText)}>Svet v{packageJson.version}</Text>
+        <Text style={css(ruleFooterLink)} onPress={() => Linking.openURL(link)}>
+          {link}
+        </Text>
+      </View>
+    </View>
+  );
+};

@@ -1,36 +1,29 @@
 import React from "react";
-import { Root } from "native-base";
-import { createDrawerNavigator, createAppContainer } from "react-navigation";
+
+import { NavigationContainer } from "@react-navigation/native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 
 import { HomeScreen } from "./screens/HomeScreen";
-import { SwatchesScreen } from "./screens/SwatchesScreen";
-import { GradientScreen } from "./screens/GradientScreen";
-import { CustomScreen } from "./screens/CustomScreen";
 import { ConfigurationScreen } from "./screens/ConfigurationScreen";
 
 import { Menu } from "./components/Menu";
 
-const routes = {
-  Home: { screen: HomeScreen },
-  Swatches: { screen: SwatchesScreen },
-  Gradient: { screen: GradientScreen },
-  Custom: { screen: CustomScreen },
-  Configuration: { screen: ConfigurationScreen },
-};
+const routes = [
+  { name: "Home", component: HomeScreen },
+  { name: "Configuration", component: ConfigurationScreen }
+];
 
-const Navigation = createAppContainer(
-  createDrawerNavigator(routes, {
-    headerMode: "none",
-    contentComponent: props => <Menu {...props} />
-  })
+const Drawer = createDrawerNavigator();
+
+export const Navigator = () => (
+  <NavigationContainer>
+    <Drawer.Navigator
+      initialRouteName={routes[0].name}
+      drawerContent={props => <Menu {...props} />}
+    >
+      {routes.map(route => (
+        <Drawer.Screen {...route} key={route.name} />
+      ))}
+    </Drawer.Navigator>
+  </NavigationContainer>
 );
-
-export class Navigator extends React.Component {
-  render() {  
-    return (
-      <Root>
-        <Navigation />
-      </Root>
-    );
-  }
-}

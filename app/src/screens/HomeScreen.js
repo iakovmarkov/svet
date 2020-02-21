@@ -1,18 +1,17 @@
-import React from "react";
-import { View } from "react-native";
-import { Button, Icon } from "native-base";
-import _ from "lodash/fp";
-import { Row, Grid } from "react-native-easy-grid";
-import gql from "graphql-tag";
-import { graphql } from "react-apollo";
-
-import { AppContainer, AppHeader } from "../components/AppUI";
+import React, { useState } from "react";
+import { View, TouchableOpacity } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { AppContainer } from "../components/AppContainer";
 import { HomeScreenRow } from "../components/HomeScreenRow";
+
+import { pipe, sampleSize, chunk, map } from "lodash/fp";
+import { useQuery } from "react-apollo";
+import gql from "graphql-tag";
 
 import colors from "../shared/colors";
 import favorites from "../shared/favorites";
 
-const query = gql`
+const QUERY = gql`
   {
     recents {
       type
@@ -25,114 +24,64 @@ const query = gql`
   }
 `;
 
-@graphql(query)
-export class HomeScreen extends React.Component {
-  constructor(props) {
-    super(props);
+const ShuffleButton = ({ onPress }) => (
+  <TouchableOpacity onPress={onPress}>
+    <View>
+      <Feather size={16} name="shuffle" />
+    </View>
+  </TouchableOpacity>
+);
 
-    this.state = {
-      swatches: [],
-      gradients: []
-    };
-  }
+const generateSwatches = (count = 20) => {
+  const type = "color";
+  const swatches = pipe(
+    sampleSize(count),
+    map(({ color }) => ({ color, type }))
+  )(colors);
 
-  componentDidMount() {
-    this.setState({
-      swatches: this.generateSwatches(),
-      gradients: this.generateGradients()
-    });
-  }
+  return swatches;
+};
 
-  generateSwatches() {
-    const type = "color";
-    const swatches = _.pipe(
-      _.sampleSize(20),
-      _.map(({ color }) => ({ color, type }))
-    )(colors);
+const generateGradients = (count = 20) => {
+  const type = "gradient";
+  const gradients = pipe(
+    sampleSize(count * 2),
+    chunk(2),
+    map(([from, to]) => ({
+      type,
+      gradient: {
+        from: from.color,
+        to: to.color
+      }
+    }))
+  )(colors);
 
-    return swatches;
-  }
+  return gradients;
+};
 
-  generateGradients() {
-    const type = "gradient";
-    const gradients = _.pipe(
-      _.sampleSize(40),
-      _.chunk(2),
-      _.map(([from, to]) => ({
-        type,
-        gradient: {
-          from: from.color,
-          to: to.color,
+export const HomeScreen = () => {
+  const { data: { recents = [], loading } = {} } = useQuery(QUERY);
+  const [swatches, setSwatches] = useState(generateSwatches());
+  const [gradients, setGradients] = useState(generateGradients());
+
+  return (
+    <AppContainer>
+      <HomeScreenRow title="Favorites" colors={favorites} />
+      <HomeScreenRow title="Recents" colors={recents} loading={loading} />
+      <HomeScreenRow
+        title="Swatches"
+        colors={swatches}
+        button={
+          <ShuffleButton onPress={() => setSwatches(generateSwatches())} />
         }
-      }))
-    )(colors);
-
-    return gradients;
-  }
-
-  render() {
-    const viewStyle = { flex: 1 };
-    const { swatches, gradients } = this.state;
-    const { data: { recents = [], loading } } = this.props
-
-    const content = (
-      <Grid>
-        <Row>
-          <HomeScreenRow title="Favorites" colors={favorites} />
-        </Row>
-        <Row>
-          <HomeScreenRow
-            title="Recents"
-            colors={recents}
-            loading={loading}
-          />
-        </Row>
-        <Row>
-          <HomeScreenRow
-            title="Swatches"
-            colors={swatches}
-            button={
-              <Button
-                small
-                transparent
-                onPress={() => {
-                  const swatches = this.generateSwatches();
-
-                  this.setState({ swatches });
-                }}
-              >
-                <Icon name="shuffle" />
-              </Button>
-            }
-          />
-        </Row>
-        <Row>
-          <HomeScreenRow
-            title="Gradients"
-            colors={gradients}
-            button={
-              <Button
-                small
-                transparent
-                onPress={() => {
-                  const gradients = this.generateGradients();
-
-                  this.setState({ gradients });
-                }}
-              >
-                <Icon name="shuffle" />
-              </Button>
-            }
-          />
-        </Row>
-      </Grid>
-    );
-
-    return (
-      <AppContainer>
-        <AppHeader>Svet Home</AppHeader>
-        <View style={viewStyle}>{content}</View>
-      </AppContainer>
-    );
-  }
-}
+      />
+      <HomeScreenRow
+        title="Gradients"
+        colors={gradients}
+        button={
+          <ShuffleButton onPress={() => setGradients(generateGradients())} />
+        }
+      />
+    </AppContainer>
+  );
+};

@@ -1,20 +1,20 @@
 import React from "react";
-import { View, FlatList } from "react-native";
-import { graphql, compose } from "react-apollo";
-import { Text, Icon } from "native-base";
+import { View, FlatList, Text } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useMutation } from "react-apollo";
+import { useFela } from "react-fela";
 import gql from "graphql-tag";
 
-import { withContext } from "../AppContext";
 import { Tile } from "../components/Tile";
 
-const query = gql`
+const QUERY = gql`
   {
     color
     on
   }
 `;
 
-const mutationSetColor = gql`
+const MUTATION_COLOR = gql`
   mutation setColor($color: String!) {
     setColor(color: $color) {
       color
@@ -23,7 +23,7 @@ const mutationSetColor = gql`
   }
 `;
 
-const mutationSetGradient = gql`
+const MUTATION_GRADIENT = gql`
   mutation setGradient($from: String!, $to: String!) {
     setGradient(from: $from, to: $to) {
       color
@@ -32,107 +32,112 @@ const mutationSetGradient = gql`
   }
 `;
 
-const options = () => {
-  return {
-    update: (proxy, { data }) => {
-      const newData = data.setColor || data.setGradient || {};
-      const storeData = proxy.readQuery({ query });
-      proxy.writeQuery({ query, data: { ...storeData, ...newData } });
-    }
-  };
+const ICON_SIZE = 32;
+
+const options = {
+  update: (proxy, { data }) => {
+    const newData = data.setColor || data.setGradient || {};
+    const storeData = proxy.readQuery({ query: QUERY });
+    proxy.writeQuery({ query: QUERY, data: { ...storeData, ...newData } });
+  }
 };
 
-export const HomeScreenRow = compose(
-  graphql(mutationSetColor, { name: "setColor", options }),
-  graphql(mutationSetGradient, { name: "setGradient", options }),
-  withContext
-)(({ title, colors, loading, button, setColor, setGradient }) => {
-  const viewStyle = {
-    flex: 1,
-    margin: 5
-  };
-  const titleStyle = {
-    margin: 5,
-    flexDirection: "row",
-    alignItems: "center"
-  };
+const ruleView = ({ theme }) => ({
+  flex: 1,
+  padding: theme.dimensions.padding
+});
 
-  const titleTextStyle = {
-    flex: 1
-  };
+const ruleTitle = ({ theme }) => ({
+  margin: theme.dimensions.margin,
+  flexDirection: "row",
+  alignItems: "center"
+});
 
-  const titleButtonStyle = {
-    flex: 0
-  };
+const ruleTitleText = {
+  flex: 1
+};
 
-  const tileRowStyle = {
-    flex: 1,
-    marginRight: -5,
-    marginLeft: -5
-  };
+const ruleTitleButton = {
+  flex: 0
+};
 
-  const tileStyle = {
-    flex: 1,
-    width: 80,
-    marginRight: 5,
-    marginLeft: 5,
-    padding: 5
-  };
+const ruleTileRow = ({ theme }) => ({
+  flex: 1,
+  marginRight: -theme.dimensions.margin,
+  marginLeft: -theme.dimensions.margin
+});
 
-  const placeholderStyle = {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-    opacity: 0.2
-  };
+const ruleTile = ({ theme }) => ({
+  flex: 1,
+  width: theme.dimensions.tileWidth,
+  marginRight: theme.dimensions.margin,
+  marginLeft: theme.dimensions.margin,
+  padding: theme.dimensions.padding
+});
+
+const rulePlaceholder = {
+  alignItems: "center",
+  justifyContent: "center",
+  flex: 1,
+  opacity: 0.2
+};
+
+export const HomeScreenRow = ({ title, colors, loading, button }) => {
+  const [setColor] = useMutation(MUTATION_COLOR, options);
+  const [setGradient] = useMutation(MUTATION_GRADIENT, options);
+  const { css } = useFela()
 
   const handlePress = item => {
     if (item.type === "color") {
       setColor({ variables: { color: item.color } });
     } else if (item.type === "gradient") {
-      setGradient({ variables: { from: item.gradient.from, to: item.gradient.to } });
+      setGradient({
+        variables: { from: item.gradient.from, to: item.gradient.to }
+      });
     }
   };
 
-  let content;
+  let content = (
+    <View style={css(rulePlaceholder)}>
+      <Feather size={ICON_SIZE} name="cloud-lightning" />
+      <Text>Nothing here yet</Text>
+    </View>
+  );
 
   if (loading) {
     content = (
-      <View style={placeholderStyle}>
-        <Icon name="cloudy" />
+      <View style={css(rulePlaceholder)}>
+        <Feather size={ICON_SIZE} name="cloud" />
         <Text>Loading</Text>
       </View>
     );
   } else if (colors && colors.length) {
     content = (
       <FlatList
-        style={tileRowStyle}
-        keyExtractor={(item, i) => `${i}_${(item.name || item.color || `${item.gradient.from}_${item.gradient.to}`)}`}
+        style={css(ruleTileRow)}
+        keyExtractor={(item, i) =>
+          `${i}_${item.name ||
+            item.color ||
+            `${item.gradient.from}_${item.gradient.to}`}`
+        }
         data={colors}
         renderItem={({ item }) => (
-          <View style={tileStyle}>
+          <View style={css(ruleTile)}>
             <Tile item={item} onPress={handlePress} />
           </View>
         )}
         horizontal
       />
     );
-  } else {
-    content = (
-      <View style={placeholderStyle}>
-        <Icon name="sad" />
-        <Text>Nothing here yet</Text>
-      </View>
-    );
   }
 
   return (
-    <View style={viewStyle}>
-      <View style={titleStyle}>
-        <Text style={titleTextStyle}>{title}</Text>
-        <View style={titleButtonStyle}>{button}</View>
+    <View style={css(ruleView)}>
+      <View style={css(ruleTitle)}>
+        <Text style={css(ruleTitleText)}>{title}</Text>
+        <View style={css(ruleTitleButton)}>{button}</View>
       </View>
       {content}
     </View>
   );
-});
+};

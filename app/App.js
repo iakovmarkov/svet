@@ -1,70 +1,88 @@
 import React from "react";
-import { ApolloProvider } from "react-apollo";
+
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
+import { AppLoading } from 'expo';
+
 import { AsyncStorage } from "react-native";
+
+import { ApolloProvider } from "react-apollo";
 import { ApolloClient } from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
-import { ApolloNetworkStatusProvider } from 'react-apollo-network-status';
+import { ApolloNetworkStatusProvider } from "react-apollo-network-status";
 
-import { SplashScreen } from "./src/screens/SplashScreen";
+import { RendererProvider as FelaProvider } from "react-fela";
+import { createRenderer } from "fela-native";
+
 import { Navigator } from "./src/Navigator";
-import { Context } from "./src/AppContext";
 
-console.ignoredYellowBox = [
-  'Warning: Missing',
-]
+console.ignoredYellowBox = ["Warning: Missing"];
 
+const CONFIG_KEY = "@svet:config_10";
 const DEFAULT_CONFIG = {
   BASIC_LOGIN: null,
   BASIC_PASSWORD: null,
   SERVER_URL: null
 };
 
-export default class App extends React.Component {
-  static KEY = "@svet:config_10";
+const renderer = createRenderer()
+export const ConfigContext = React.createContext()
 
+const createClient = (config) => {
+  const cache = new InMemoryCache();
+
+  const link = new HttpLink({
+    uri: config.SERVER_URL
+  });
+
+  const client = new ApolloClient({
+    cache,
+    link
+  });
+
+  return client;
+}
+
+export default class App extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       config: DEFAULT_CONFIG,
-      ready: false,
-      recents: [],
+      ready: false
     };
   }
 
   async componentDidMount() {
     await Font.loadAsync({
-      Roboto: require("native-base/Fonts/Roboto.ttf"),
-      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
       ...Ionicons.font
     });
 
-    const config = await this._loadConfig();
+    const config = await this.loadConfig();
 
     this.setState({ ready: true, config });
   }
 
-  async handleConfigChange(newConfig) {
-    const config = {
+  async saveConfig(config) {
+    const finalConfig = {
       ...this.state.config,
-      ...newConfig
+      ...config
     };
 
     try {
-      await AsyncStorage.setItem(App.KEY, JSON.stringify(config));
+      await AsyncStorage.setItem(CONFIG_KEY, JSON.stringify(finalConfig));
     } catch (e) {
       console.error("Saving config failed:", e);
       return;
     }
 
-    this.setState({ config });
+    this.setState({ config: finalConfig });
   }
 
-  async _loadConfig() {
+  async loadConfig() {
     try {
-      const json = await AsyncStorage.getItem(App.KEY);
+      const json = await AsyncStorage.getItem(CONFIG_KEY);
       if (json !== null) {
         return JSON.parse(json);
       }
@@ -75,42 +93,30 @@ export default class App extends React.Component {
     return DEFAULT_CONFIG;
   }
 
-  _createClient() {
-    const { config } = this.state || {};
-    const cache = new InMemoryCache();
-
-    const link = new HttpLink({
-      uri: config.SERVER_URL
-    });
-
-    const client = new ApolloClient({
-      cache,
-      link
-    });
-
-    return client;
-  }
 
   render() {
     const { config, ready } = this.state;
+
     const contextValue = {
       config,
-      handleConfigChange: newConfig => this.handleConfigChange(newConfig)
+      saveConfig: newConfig => this.saveConfig(newConfig)
     };
 
     if (ready) {
-      const client = this._createClient();
+      const client = createClient(config);
       return (
         <ApolloProvider client={client}>
           <ApolloNetworkStatusProvider>
-            <Context.Provider value={contextValue}>
-              <Navigator />
-            </Context.Provider>
+            <ConfigContext.Provider value={contextValue}>
+              <FelaProvider renderer={renderer}>
+                <Navigator />
+              </FelaProvider>
+            </ConfigContext.Provider>
           </ApolloNetworkStatusProvider>
         </ApolloProvider>
       );
     } else {
-      return <SplashScreen />;
+      return <AppLoading />;
     }
   }
 }

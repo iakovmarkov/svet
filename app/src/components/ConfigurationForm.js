@@ -1,93 +1,153 @@
 import React from "react";
-import { Label, Form, Item, Input, Button, Text, Toast } from "native-base";
-import { Context } from "../AppContext";
+import {
+  Text,
+  View,
+  TouchableHighlight,
+  TextInput,
+  ActivityIndicator,
+  Alert
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useFela } from "react-fela";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
-const Field = ({ onChange, label, placeholder, value }) => (
-  <Item stackedLabel>
-    <Label>{label}</Label>
-    <Input onChangeText={onChange} placeholder={placeholder} value={value} />
-  </Item>
-);
+const ruleForm = ({ theme }) => ({
+  padding: theme.dimensions.padding * 2,
+  height: '100%',
+  justifyContent: 'space-between',
+});
 
-class _ConfigurationForm extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = props.initialValues
-  }
-
-  createInputHandler(field) {
-    return value => {
-      this.setState({ [field]: value });
-    };
-  }
-
-  async onSave() {
-    try {
-      await this.props.setConfig(this.state);
-    } catch (e) {
-      console.error("Connecting to Svet server failed:", e);
-
-      Toast.show({
-        text:
-          "Connection to Svet server failed! Please check that Svet is running and that the URL is correct.",
-        type: "danger"
-      });
-
-      return;
-    }
-
-    Toast.show({
-      text: "Connected to Svet",
-      type: "success"
-    });
-  }
-
-  onReset() {
-    throw new Error('aaa')
-  }
-
-  render() {
-    return (
-      <React.Fragment>
-        <Form>
-          <Field
-            label="Svet Server"
-            placeholder="https://svet.iakov.me/"
-            value={this.state.SERVER_URL}
-            onChange={this.createInputHandler("SERVER_URL")}
-          />
-          <Field
-            label="Username"
-            placeholder="svet"
-            value={this.state.BASIC_LOGIN}
-            onChange={this.createInputHandler("BASIC_LOGIN")}
-          />
-          <Field
-            label="Password"
-            placeholder="s3cr3t"
-            value={this.state.BASIC_PASSWORD}
-            onChange={this.createInputHandler("BASIC_PASSWORD")}
-          />
-        </Form>
-        <Button block primary onPress={this.onSave.bind(this)}>
-          <Text>Save</Text>
-        </Button>
-        <Button block transparent onPress={this.onReset.bind(this)}>
-          <Text>Reset</Text>
-        </Button>
-      </React.Fragment>
-    );
-  }
+const ruleFieldContainer = {
+  flex: 1,
 }
 
-export const ConfigurationForm = (props = {}) => (
-  <Context.Consumer>
-    {({ config, handleConfigChange }) => (
-      <_ConfigurationForm
-        setConfig={handleConfigChange}
-        initialValues={config}
-        {...props}
+const ruleButtonContainer = ({ theme }) => ({
+  flex: 0,
+  margin: -theme.dimensions.margin,
+  paddingBottom: theme.dimensions.margin,
+  flexDirection: "row"
+});
+
+const ruleInput = ({ theme }) => ({
+  ...theme.control,
+  borderColor: theme.color
+});
+
+const ruleError = ({ theme }) => ({
+  margin: theme.dimensions.margin,
+  marginTop: 0,
+  paddingLeft: theme.dimensions.padding,
+  color: "#990000"
+});
+
+const ruleButton = ({ theme, type, disabled, icon }) => ({
+  ...theme.control,
+  ...theme.shadow,
+  margin: theme.dimensions.margin,
+  height: 40,
+  backgroundColor: "#fefefe",
+  width: icon ? 40 : undefined,
+  justifyContent: "center",
+  alignItems: "center",
+  flexGrow: type === "submit" ? 1 : 0,
+  borderColor: type === "submit" ? theme.colors.blue : theme.colors.red,
+  opacity: disabled ? 0.4 : 1
+});
+
+const Field = ({ name, placeholder, ...props }) => {
+  const { css } = useFela();
+  return (
+    <View>
+      <TextInput
+        onChangeText={props.handleChange(name)}
+        onBlur={props.handleBlur(name)}
+        value={props.values[name]}
+        placeholder={placeholder}
+        style={css(ruleInput)}
+        autoCompleteType="off"
       />
-    )}
-  </Context.Consumer>
-);
+      <Text style={css(ruleError)}>
+        {props.touched[name] && props.errors[name] ? props.errors[name] : null}
+      </Text>
+    </View>
+  );
+};
+
+const Button = ({ onPress, children, loading, type, disabled, icon }) => {
+  const { css } = useFela({ type, disabled, icon });
+
+  return (
+    <TouchableHighlight
+      underlayColor="#f0f0f0"
+      onPress={!disabled && onPress}
+      style={css(ruleButton)}
+    >
+      {loading ? <ActivityIndicator /> : children}
+    </TouchableHighlight>
+  );
+};
+
+const validationSchema = Yup.object({
+  SERVER_URL: Yup.string()
+    .url()
+    .required("Server URL is required")
+});
+
+export const ConfigurationForm = ({ onSave, initialValues }) => {
+  const { css } = useFela();
+  const onSubmit = async (values, actions) => {
+    await onSave(values);
+    Alert.alert("Configuration saved!");
+    actions.setSubmitting(false);
+  };
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+    >
+      {props => (
+        <View style={css(ruleForm)}>
+          <View className={css(ruleFieldContainer)}><Field
+            name="SERVER_URL"
+            placeholder="https://svet.iakov.me"
+            textContentType="url"
+            {...props}
+          />
+          <Field
+            name="BASIC_LOGIN"
+            placeholder="iakov"
+            textContentType="username"
+            {...props}
+          />
+          <Field
+            name="BASIC_PASSWORD"
+            placeholder="s3cr3t"
+            textContentType="password"
+            {...props}
+          /></View>
+          <View style={css(ruleButtonContainer)}>
+            <Button
+              onPress={props.handleSubmit}
+              loading={props.isSubmitting}
+              disabled={props.isSubmitting}
+              type="submit"
+            >
+              <Text>Save</Text>
+            </Button>
+            <Button
+              onPress={props.handleReset}
+              disabled={props.isSubmitting}
+              type="reset"
+              icon
+            >
+              <Feather name="delete" />
+            </Button>
+          </View>
+        </View>
+      )}
+    </Formik>
+  );
+};
