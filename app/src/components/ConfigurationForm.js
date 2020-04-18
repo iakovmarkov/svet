@@ -55,20 +55,23 @@ const ruleButton = ({ theme, type, disabled, icon }) => ({
   opacity: disabled ? 0.4 : 1
 });
 
-const Field = ({ name, placeholder, ...props }) => {
+const Field = ({ name, placeholder, handleChange, handleBlur, values, touched, errors, ...props }) => {
   const { css } = useFela();
   return (
     <View>
       <TextInput
-        onChangeText={props.handleChange(name)}
-        onBlur={props.handleBlur(name)}
-        value={props.values[name]}
+        onChangeText={handleChange(name)}
+        onBlur={handleBlur(name)}
+        value={values[name]}
         placeholder={placeholder}
         style={css(ruleInput)}
         autoCompleteType="off"
+        autoCorrect={false}
+        spellCheck={false}
+        {...props}
       />
       <Text style={css(ruleError)}>
-        {props.touched[name] && props.errors[name] ? props.errors[name] : null}
+        {touched[name] && errors[name] ? errors[name] : null}
       </Text>
     </View>
   );
@@ -114,6 +117,7 @@ export const ConfigurationForm = ({ onSave, initialValues }) => {
             name="SERVER_URL"
             placeholder="https://svet.iakov.me"
             textContentType="url"
+            autoFocus={true}
             {...props}
           />
           <Field
@@ -126,6 +130,7 @@ export const ConfigurationForm = ({ onSave, initialValues }) => {
             name="BASIC_PASSWORD"
             placeholder="s3cr3t"
             textContentType="password"
+            secureTextEntry={true}
             {...props}
           /></View>
           <View style={css(ruleButtonContainer)}>
