@@ -1,9 +1,9 @@
 ---
-- hosts: pi
-  remote_user: pi
+- hosts: svet.iakov.me
+  remote_user: markov
+  become: yes
   tasks:
-  - name: stop svet
-    become: yes
+  - name: stop service
     service:
       name: svet
       state: stopped
@@ -11,26 +11,20 @@
     when: lookup('env', 'DEPLOY') != 'master'
     synchronize:
       src: '../../'
-      dest: /home/pi/svet
+      dest: /usr/bin/svet
   - name: get latet Svet
     when: lookup('env', 'DEPLOY') == 'master'
     block:
-    - file: path=/home/pi/svet state=absent
-    - file: path=/home/pi/svet state=directory
+    - file: path=/usr/bin/svet state=absent
+    - file: path=/usr/bin/svet state=directory
     - git:
-        repo: 'git@github.com:iakovmarkov/svet.git'
-        dest: /home/pi/svet
-        accept_hostkey: yes
+        repo: https://github.com/iakovmarkov/svet.git
+        dest: /usr/bin/svet
   - name: install packages
-    npm:
-      path: /home/pi/svet
-  - name: start svet
-    become: yes
-    service:
-      name: svet
-      state: started
-  - name: ensure svet is running
-    become: yes
+    command: sudo npm install
+    args:
+      chdir: /usr/bin/svet
+  - name: start service
     service:
       name: svet
       state: started
