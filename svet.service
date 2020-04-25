@@ -1,0 +1,22 @@
+[Unit]
+Description=Svet
+Wants=bluetoothd.service
+After=network.target
+
+[Service]
+ExecStartPre=/usr/bin/bluetoothctl --timeout=5 scan on
+WorkingDirectory=/usr/bin/svet
+ExecStart=/usr/local/bin/npm start
+Restart=always
+RestartSec=500ms
+StartLimitInterval=0
+Environment=TOKEN=DEADBEEF
+Environment=ALLOWED_USERS=["foo"]
+Environment=WEB=true
+Environment=BOT=true
+Environment=PORT=80
+Environment=BASIC_LOGIN=bar
+Environment=BASIC_PASSWORD=secret
+
+[Install]
+WantedBy=multi-user.target

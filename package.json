@@ -4,8 +4,8 @@
   "description": "A small application to control PlayBulb devices",
   "main": "index.js",
   "scripts": {
-    "deploy": "ansible-playbook ./.ci/svet.yml",
-    "deploy:master": "DEPLOY=master ansible-playbook ./.ci/svet.yml",
+    "deploy": "ansible-playbook ansible.yml",
+    "deploy:master": "DEPLOY=master ansible-playbook ansible.yml",
     "dev": "DEBUG='svet:*' nodemon index.js --bot --web",
     "start": "DEBUG='svet:*' node index.js --bot --web",
     "lint": "eslint **/*.js",

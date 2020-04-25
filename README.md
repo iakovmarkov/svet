@@ -11,11 +11,10 @@ It uses Bluteooth LE to send commands to them, and can control multiple devices 
 * `/help` - This help message
 * `/on` - Turns on all lights
 * `/off` - Turns off all lights
-* `/set` - Sets the lights to specified color
+* `/set $COLOR` - Sets the lights to specified color
 * `/devices` - Lists connected devices
 * `/reconnect` - Tries to reconnect to all devices
 * `/colors` - Lists known colors
-* `/restart` - Restarts the bot and reconnects to all lights
 
 ## Configuring
 * Get an Telegram bot token [here](https://core.telegram.org/bots#6-botfather)
@@ -38,35 +37,10 @@ Run the following command:
 This grants the node binary cap_net_raw privileges, so it can start/stop BLE advertising.
 
 ### Using Systemd to ensure that app is always running
-A good starting point for your Systemd unit:
-    
-    /etc/systemd/system/svet.service:
-
-    [Unit]
-    Description=Svet
-    Wants=bluetoothd.service
-    After=network.target
-
-    [Service]
-    User=pi
-    WorkingDirectory=/home/pi/svet
-    ExecStart=/usr/bin/npm start
-    Restart=always
-    RestartSec=500ms
-    StartLimitInterval=0
-    Environment=TOKEN=DEADBEEF
-    Environment=ALLOWED_USERS=["foo"]
-    Environment=WEB=true
-    Environment=BOT=true
-    Environment=PORT=80
-    Environment=BASIC_LOGIN=bar
-    Environment=BASIC_PASSWORD=secret
-
-    [Install]
-    WantedBy=multi-user.target
+Copy `svet.service` into `/etc/systemd/system/svet.service`, and modify the environment variables.
 
 ## Requirements
-* `node` v8.0.0 or higher
+* `node` v8.0.0
 * A bluetooth adapter
 
 ## Credits
