@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/iakovmarkov/svet#readme",
   "dependencies": {
-    "apollo-server-koa": "^1.3.6",
+    "apollo-server-koa": "^2.14.2",
     "bluetoothctl": "^1.1.0",
     "chroma-js": "^2.0.3",
     "graphql": "^0.13.2",
