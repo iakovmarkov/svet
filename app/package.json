@@ -1,6 +1,6 @@
 {
   "main": "node_modules/expo/AppEntry.js",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "lint-staged": {
     "linters": {
       "src/**/*.js": [
@@ -17,8 +17,8 @@
     "eject": "expo eject"
   },
   "dependencies": {
-    "@react-native-community/async-storage": "^1.4.0",
-    "@react-native-community/masked-view": "0.1.5",
+    "@react-native-community/async-storage": "~1.11.0",
+    "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/drawer": "^5.0.6",
     "@react-navigation/native": "^5.0.6",
     "@react-navigation/stack": "^5.0.6",
@@ -26,27 +26,27 @@
     "apollo-client": "^2.6.8",
     "apollo-link-http": "^1.5.16",
     "chroma-js": "^2.1.0",
-    "expo": "^36.0.0",
-    "expo-constants": "~8.0.0",
-    "expo-linear-gradient": "~8.0.0",
+    "expo": "^38.0.0",
+    "expo-constants": "~9.1.1",
+    "expo-linear-gradient": "~8.2.1",
     "fela-native": "^11.1.2",
     "formik": "^2.1.4",
     "graphql": "^14.3.0",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",
-    "react": "16.9.0",
+    "react": "16.11.0",
     "react-apollo": "^3.1.3",
     "react-apollo-network-status": "^3.0.0",
     "react-fela": "^11.1.2",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.1.tar.gz",
-    "react-native-gesture-handler": "~1.5.0",
-    "react-native-reanimated": "~1.4.0",
-    "react-native-safe-area-context": "0.6.0",
-    "react-native-screens": "2.0.0-alpha.12",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-gesture-handler": "~1.6.0",
+    "react-native-reanimated": "~1.9.0",
+    "react-native-safe-area-context": "~3.0.7",
+    "react-native-screens": "~2.9.0",
     "yup": "^0.28.1"
   },
   "devDependencies": {
-    "babel-preset-expo": "^8.0.0"
+    "babel-preset-expo": "^8.2.3"
   },
   "private": true
 }
