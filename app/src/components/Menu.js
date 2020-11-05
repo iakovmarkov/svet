@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
+  Animated,
   Image,
   ImageBackground,
   Linking,
@@ -18,7 +19,6 @@ import { useFela } from "react-fela";
 import gql from "graphql-tag";
 import { useApolloNetworkStatus } from "react-apollo-network-status";
 import { useQuery, useMutation } from "react-apollo";
-import chroma from "../utils/chroma";
 import Constants from "expo-constants";
 
 const QUERY = gql`
@@ -84,7 +84,10 @@ const ruleImageBg = {
   alignItems: "center"
 };
 
-const ruleImageLogo = { flex: 1 };
+const ruleImageLogo = ({ isOpen }) => ({
+  flex: 1,
+  display: isOpen ? 'flex' : 'none',
+});
 
 const ruleIndicator = ({ on }) => ({
   left: 0,
@@ -95,8 +98,6 @@ const ruleIndicator = ({ on }) => ({
   backgroundColor: "#000000",
   opacity: on ? 0 : 0.5
 });
-
-const getTintColor = color => chroma(color).hex();
 
 const DeviceCounter = ({ devices, loading }) => {
   const { css } = useFela();
@@ -139,8 +140,37 @@ const Indicator = ({ on }) => {
 };
 
 export const Menu = props => {
-  const { css } = useFela();
+  const isOpen = Boolean(props.state.history.find(it => it.type === 'drawer'))
   const { data: { devices, on, color, loading } = {} } = useQuery(QUERY);
+  
+  const { css } = useFela({ isOpen, color });
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const fadeIn = () => {
+    // Will change fadeAnim value to 1 in 5 seconds
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 250,
+    }).start();
+  };
+
+  const fadeOut = () => {
+    // Will change fadeAnim value to 0 in 5 seconds
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 250,
+    }).start();
+  };
+
+  if (isOpen && fadeAnim.current !== 1) {
+    fadeIn()
+  }
+
+  if (!isOpen && fadeAnim.current !== 0) {
+    fadeOut()
+  }
+ 
   const [toggle] = useMutation(MUTATION_TOGGLE, {
     variables: { value: !on },
     update: (proxy, { data: { toggle } }) => {
@@ -159,17 +189,21 @@ export const Menu = props => {
       >
         <Indicator on={on} />
         <TouchableOpacity onPress={toggle}>
-          <Image
+          <Animated.Image
             source={require("../resources/logo_transparent.png")}
             resizeMode="contain"
-            style={css(ruleImageLogo)}
+            useNativeDriver
+            style={{
+              ...css(ruleImageLogo),
+              opacity: fadeAnim,
+            }}
           />
         </TouchableOpacity>
         <Spinner />
       </ImageBackground>
 
       <DrawerContentScrollView {...props}>
-        <DrawerItemList {...props} activeTintColor={getTintColor(color)} />
+        <DrawerItemList {...props} />
       </DrawerContentScrollView>
 
       <View style={css(ruleFooter)}>

@@ -20,6 +20,8 @@ const ruleForm = ({ theme }) => ({
 
 const ruleFieldContainer = {
   flex: 1,
+  marginTop: 50,
+  marginBottom: 50,
 }
 
 const ruleButtonContainer = ({ theme }) => ({
@@ -31,7 +33,8 @@ const ruleButtonContainer = ({ theme }) => ({
 
 const ruleInput = ({ theme }) => ({
   ...theme.control,
-  borderColor: theme.color
+  marginTop: 5,
+  marginBottom: 5,
 });
 
 const ruleError = ({ theme }) => ({
@@ -58,22 +61,19 @@ const ruleButton = ({ theme, type, disabled, icon }) => ({
 const Field = ({ name, placeholder, handleChange, handleBlur, values, touched, errors, ...props }) => {
   const { css } = useFela();
   return (
-    <View>
+    <>
       <TextInput
         onChangeText={handleChange(name)}
         onBlur={handleBlur(name)}
         value={values[name]}
         placeholder={placeholder}
         style={css(ruleInput)}
-        autoCompleteType="off"
-        autoCorrect={false}
-        spellCheck={false}
         {...props}
       />
       <Text style={css(ruleError)}>
         {touched[name] && errors[name] ? errors[name] : null}
       </Text>
-    </View>
+    </>
   );
 };
 
@@ -113,26 +113,27 @@ export const ConfigurationForm = ({ onSave, initialValues }) => {
     >
       {props => (
         <View style={css(ruleForm)}>
-          <View className={css(ruleFieldContainer)}><Field
-            name="SERVER_URL"
-            placeholder="https://svet.iakov.me"
-            textContentType="url"
-            autoFocus={true}
-            {...props}
-          />
-          <Field
-            name="BASIC_LOGIN"
-            placeholder="iakov"
-            textContentType="username"
-            {...props}
-          />
-          <Field
-            name="BASIC_PASSWORD"
-            placeholder="s3cr3t"
-            textContentType="password"
-            secureTextEntry={true}
-            {...props}
-          /></View>
+          <View className={css(ruleFieldContainer)}>
+            <Field
+              name="SERVER_URL"
+              placeholder="https://svet.iakov.me"
+              textContentType="url"
+              {...props}
+            />
+            <Field
+              name="BASIC_LOGIN"
+              placeholder="iakov"
+              textContentType="username"
+              {...props}
+            />
+            <Field
+              name="BASIC_PASSWORD"
+              placeholder="s3cr3t"
+              textContentType="password"
+              secureTextEntry={true}
+              {...props}
+            />
+          </View>
           <View style={css(ruleButtonContainer)}>
             <Button
               onPress={props.handleSubmit}

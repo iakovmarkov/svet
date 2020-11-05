@@ -18,7 +18,7 @@ import { createRenderer } from "fela-native";
 
 import { Navigator } from "./src/Navigator";
 
-console.ignoredYellowBox = ["Warning: Missing"];
+import ConfigContext from './src/ConfigContext'
 
 const CONFIG_KEY = "@svet:config_10";
 const DEFAULT_CONFIG = {
@@ -28,7 +28,6 @@ const DEFAULT_CONFIG = {
 };
 
 const renderer = createRenderer();
-export const ConfigContext = React.createContext();
 
 const createClient = (config) => {
   const httpLinkConfig = {
