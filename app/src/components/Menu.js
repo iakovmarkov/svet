@@ -1,18 +1,18 @@
 import React, { useRef } from "react";
 import {
   Animated,
-  Image,
   ImageBackground,
   Linking,
   ActivityIndicator,
   View,
   Text,
   ToastAndroid,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import {
   DrawerContentScrollView,
-  DrawerItemList
+  DrawerItemList,
+  DrawerItem,
 } from "@react-navigation/drawer";
 import packageJson from "../../package.json";
 import { useFela } from "react-fela";
@@ -55,14 +55,14 @@ const MUTATION_TOGGLE = gql`
 const ruleSpinner = {
   position: "absolute",
   left: 5,
-  top: 5 + Constants.statusBarHeight
+  top: 5 + Constants.statusBarHeight,
 };
 
 const ruleFooter = {
   flex: 0,
   flexDirection: "column",
   justifyContent: "space-evenly",
-  padding: 8
+  padding: 8,
 };
 
 const ruleFooterText = {
@@ -70,7 +70,7 @@ const ruleFooterText = {
   fontSize: 10,
   margin: 1,
   opacity: 0.2,
-  color: "black"
+  color: "black",
 };
 
 const ruleFooterLink = { ...ruleFooterText, textDecorationLine: "underline" };
@@ -81,12 +81,12 @@ const ruleImageBg = {
   height: 240,
   alignSelf: "stretch",
   justifyContent: "center",
-  alignItems: "center"
+  alignItems: "center",
 };
 
 const ruleImageLogo = ({ isOpen }) => ({
   flex: 1,
-  display: isOpen ? 'flex' : 'none',
+  display: isOpen ? "flex" : "none",
 });
 
 const ruleIndicator = ({ on }) => ({
@@ -96,30 +96,18 @@ const ruleIndicator = ({ on }) => ({
   width: "100%",
   position: "absolute",
   backgroundColor: "#000000",
-  opacity: on ? 0 : 0.5
+  opacity: on ? 0 : 0.5,
 });
 
 const DeviceCounter = ({ devices, loading }) => {
   const { css } = useFela();
-  const [reconnect] = useMutation(MUTATION_RECONNECT, {
-    update: (proxy, { data: { reconnect } }) => {
-      const { devices = [] } = reconnect;
-      ToastAndroid.show(
-        `Connected to ${devices.length} devices`,
-        ToastAndroid.SHORT
-      );
-
-      const data = proxy.readQuery({ query: QUERY });
-      proxy.writeQuery({ query: QUERY, data: { ...data, devices } });
-    }
-  });
 
   return (
-    <TouchableOpacity onPress={reconnect}>
-      <Text style={css(ruleFooterText)}>
-        {loading ? "Loading" : `${devices && devices.length} Devices Connected`}
-      </Text>
-    </TouchableOpacity>
+    <Text style={css(ruleFooterText)}>
+      {loading
+        ? "Loading"
+        : `${devices ? devices.length : "No"} Devices Connected`}
+    </Text>
   );
 };
 
@@ -139,10 +127,12 @@ const Indicator = ({ on }) => {
   return <View style={css(ruleIndicator)} />;
 };
 
-export const Menu = props => {
-  const isOpen = Boolean(props.state.history.find(it => it.type === 'drawer'))
+export const Menu = (props) => {
+  const isOpen = Boolean(
+    props.state.history.find((it) => it.type === "drawer")
+  );
   const { data: { devices, on, color, loading } = {} } = useQuery(QUERY);
-  
+
   const { css } = useFela({ isOpen, color });
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -164,19 +154,32 @@ export const Menu = props => {
   };
 
   if (isOpen && fadeAnim.current !== 1) {
-    fadeIn()
+    fadeIn();
   }
 
   if (!isOpen && fadeAnim.current !== 0) {
-    fadeOut()
+    fadeOut();
   }
- 
+
   const [toggle] = useMutation(MUTATION_TOGGLE, {
     variables: { value: !on },
     update: (proxy, { data: { toggle } }) => {
       const data = proxy.readQuery({ query: QUERY });
       proxy.writeQuery({ query: QUERY, data: { ...data, ...toggle } });
-    }
+    },
+  });
+
+  const [reconnect] = useMutation(MUTATION_RECONNECT, {
+    update: (proxy, { data: { reconnect } }) => {
+      const { devices = [] } = reconnect;
+      ToastAndroid.show(
+        `Connected to ${devices.length} devices`,
+        ToastAndroid.SHORT
+      );
+
+      const data = proxy.readQuery({ query: QUERY });
+      proxy.writeQuery({ query: QUERY, data: { ...data, devices } });
+    },
   });
 
   const link = "https://github.com/iakovmarkov/svet/";
@@ -204,6 +207,7 @@ export const Menu = props => {
 
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
+        <DrawerItem label="Reconnect" onPress={reconnect} />
       </DrawerContentScrollView>
 
       <View style={css(ruleFooter)}>
