@@ -100,7 +100,7 @@ export default class App extends React.Component {
 
   render() {
     const { config, ready } = this.state;
-
+    
     const contextValue = {
       config,
       saveConfig: (newConfig) => this.saveConfig(newConfig),
@@ -120,6 +120,7 @@ export default class App extends React.Component {
         </ApolloProvider>
       );
     } else {
+      return null;
       return <AppLoading />;
     }
   }

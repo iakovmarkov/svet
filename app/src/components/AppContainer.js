@@ -46,9 +46,9 @@ const THEME = {
 
 const ruleAppContainer = ({ color }) => ({
   backgroundColor: "#ffffff",
-  borderTopColor: chroma(color)
-    .desaturate(0.5)
-    .darken(0.5),
+  // borderTopColor: chroma(color)
+  //   .desaturate(0.5)
+  //   .darken(0.5),
   borderTopWidth: Constants.statusBarHeight,
   height: "100%",
   flex: 1

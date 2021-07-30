@@ -142,6 +142,7 @@ export const Menu = (props) => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 250,
+      useNativeDriver: true
     }).start();
   };
 
@@ -150,6 +151,7 @@ export const Menu = (props) => {
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 250,
+      useNativeDriver: true
     }).start();
   };
 
